@@ -17,6 +17,7 @@ kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
 ksoup = "0.2.6"
 material3 = "1.10.0-alpha05"
+materialIconsExtended = "1.7.3"
 reduxKotlinThreadsafe = "0.6.1"
 
 [libraries]
@@ -41,6 +42,7 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 redux-kotlin-threadsafe = { module = "org.reduxkotlin:redux-kotlin-threadsafe", version.ref = "reduxKotlinThreadsafe" }
 
 [plugins]
