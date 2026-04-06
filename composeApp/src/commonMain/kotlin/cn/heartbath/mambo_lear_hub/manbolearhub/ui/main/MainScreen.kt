@@ -1,13 +1,12 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.main
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import cn.heartbath.mambo_lear_hub.manbolearhub.components.BottomNavigationBar
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.ManBoMainTabType
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.TabDisplayItems
@@ -24,6 +23,7 @@ internal fun MainScreen(
     val selectedTab by viewModel.selectedTab.collectAsState()
 
     Scaffold(
+        containerColor = Color.White,
         bottomBar = {
             BottomNavigationBar(
                 items = TabDisplayItems,
@@ -31,9 +31,12 @@ internal fun MainScreen(
                 onItemClick = { viewModel.onTabSelected(it.tab) }
             )
         }
-    ) {
+    ) { innerPadding ->
         when (selectedTab) {
-            ManBoMainTabType.HOME -> HomeScreen()
+            ManBoMainTabType.HOME -> HomeScreen(
+                modifier = Modifier.padding(innerPadding)
+            )
+
             ManBoMainTabType.CIRCLE -> CircleScreen()
             ManBoMainTabType.PROFILE -> ProfileScreen()
         }

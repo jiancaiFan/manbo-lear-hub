@@ -1,19 +1,30 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-internal fun HomeScreen() {
-    Box(
-        modifier = Modifier
+internal fun HomeScreen(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
             .fillMaxSize(),
-        contentAlignment = Alignment.Center
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("首页内容")
+        HomeTopBar(
+            unreadCount = 8,
+            onProfileClick = { /* TODO */ },
+            onSearchClick = { /* TODO */ },
+            onMessageClick = { /* TODO */ },
+            onQuickActionClick = { /* TODO */ },
+        )
     }
 }

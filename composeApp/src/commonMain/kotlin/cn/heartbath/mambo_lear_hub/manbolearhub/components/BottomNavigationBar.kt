@@ -96,7 +96,7 @@ internal fun BottomNavigationBar(
                         imageVector = item.icon,
                         contentDescription = null,
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(26.dp)
                             .clearAndSetSemantics {},
                         tint = if (selected) CommonColors.BrandPrimaryRed else CommonColors.TextSecondary
                     )
