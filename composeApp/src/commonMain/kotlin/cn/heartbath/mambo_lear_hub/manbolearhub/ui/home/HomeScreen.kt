@@ -16,9 +16,9 @@ internal fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinInject()
 ) {
-
     val homeState by viewModel.homeState.collectAsState()
     val uiModel = homeState.uiModel
+    val selectedCategory = uiModel.selectedCategory
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -35,14 +35,14 @@ internal fun HomeScreen(
 
         HomeCategoryNavBar(
             categories = uiModel.categories,
-            selectedCategoryId = uiModel.selectedCategoryId,
-            onSelectedChange = { viewModel.onCategorySelected(it.id) }
+            selectedCategory = selectedCategory,
+            onSelectedChange = { position -> viewModel.onCategorySelected(position) }
         )
 
         HomeCategoryContent(
-            selectedCategoryId = uiModel.selectedCategoryId,
-            data = uiModel.categoryDataMap[uiModel.selectedCategoryId].orEmpty(),
-            isLoading = homeState.loadingCategoryIds.contains(uiModel.selectedCategoryId),
+            selectedCategoryId = uiModel.categories.getOrNull(selectedCategory)?.id.orEmpty(),
+            data = uiModel.categoryDataMap[selectedCategory] ?: emptyList(),
+            isLoading = homeState.loadingCategories.contains(selectedCategory),
             errorMessage = homeState.errorMessage
         )
     }

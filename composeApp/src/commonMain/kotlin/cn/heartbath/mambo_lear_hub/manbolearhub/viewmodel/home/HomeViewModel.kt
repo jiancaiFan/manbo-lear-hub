@@ -27,52 +27,56 @@ class HomeViewModel : ViewModel() {
                     CategoryItem("6", "科技"),
                     CategoryItem("7", "游戏"),
                     CategoryItem("8", "AI"),
-                ), selectedCategoryId = "1"
+                ),
+                selectedCategory = 0
             )
         )
     )
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
     init {
-        loadCategoryIfNeeded("1")
+        loadCategoryIfNeeded(0)
     }
 
-    fun onCategorySelected(categoryId: String) {
-        if (_homeState.value.uiModel.selectedCategoryId == categoryId) return
+    fun onCategorySelected(position: Int) {
+        val categories = _homeState.value.uiModel.categories
+        if (position !in categories.indices) return
+        if (_homeState.value.uiModel.selectedCategory == position) return
 
-        _homeState.update { it.copy(uiModel = it.uiModel.copy(selectedCategoryId = categoryId)) }
-        loadCategoryIfNeeded(categoryId)
+        _homeState.update { state ->
+            state.copy(uiModel = state.uiModel.copy(selectedCategory = position))
+        }
+        loadCategoryIfNeeded(position)
     }
 
-    private fun loadCategoryIfNeeded(categoryId: String) {
+    private fun loadCategoryIfNeeded(position: Int) {
         val state = _homeState.value
-        if (state.uiModel.categoryDataMap.containsKey(categoryId)) return
-        if (state.loadingCategoryIds.contains(categoryId)) return
+        if (position !in state.uiModel.categories.indices) return
+        if (state.uiModel.categoryDataMap.containsKey(position)) return
+        if (state.loadingCategories.contains(position)) return
 
         viewModelScope.launch {
             _homeState.update {
                 it.copy(
-                    loadingCategoryIds = it.loadingCategoryIds + categoryId,
+                    loadingCategories = it.loadingCategories + position,
                     errorMessage = null
                 )
             }
 
             try {
-                // TODO 替换成 repository 请求
-                val data = fetchCategoryData(categoryId)
-
+                val data = fetchCategoryData(position)
                 _homeState.update {
                     it.copy(
                         uiModel = it.uiModel.copy(
-                            categoryDataMap = it.uiModel.categoryDataMap + (categoryId to data),
+                            categoryDataMap = it.uiModel.categoryDataMap + (position to data)
                         ),
-                        loadingCategoryIds = it.loadingCategoryIds - categoryId
+                        loadingCategories = it.loadingCategories - position
                     )
                 }
             } catch (e: Exception) {
                 _homeState.update {
                     it.copy(
-                        loadingCategoryIds = it.loadingCategoryIds - categoryId,
+                        loadingCategories = it.loadingCategories - position,
                         errorMessage = e.message ?: "加载失败"
                     )
                 }
@@ -80,12 +84,12 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    private suspend fun fetchCategoryData(categoryId: String): List<String> {
+    private suspend fun fetchCategoryData(position: Int): List<String> {
         delay(500.milliseconds)
         return listOf(
-            "分类 $categoryId 的数据 1",
-            "分类 $categoryId 的数据 2",
-            "分类 $categoryId 的数据 3"
+            "分类 position=$position 的数据 1",
+            "分类 position=$position 的数据 2",
+            "分类 position=$position 的数据 3"
         )
     }
 }

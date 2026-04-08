@@ -36,8 +36,8 @@ data class CategoryItem(
 @Composable
 internal fun HomeCategoryNavBar(
     categories: List<CategoryItem>,
-    selectedCategoryId: String,
-    onSelectedChange: (CategoryItem) -> Unit
+    selectedCategory: Int,
+    onSelectedChange: (Int) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -50,8 +50,8 @@ internal fun HomeCategoryNavBar(
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        categories.forEach { item ->
-            val selected = item.id == selectedCategoryId
+        categories.forEachIndexed { position, item ->
+            val selected = position == selectedCategory
 
             Column(
                 modifier = Modifier
@@ -60,7 +60,7 @@ internal fun HomeCategoryNavBar(
                         this.selected = selected
                         role = Role.Tab
                     }
-                    .clickable { onSelectedChange(item) }
+                    .clickable { onSelectedChange(position) }
                     .wrapContentWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

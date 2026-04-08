@@ -4,14 +4,13 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
 
 data class HomeUIModel(
     val categories: List<CategoryItem>,
-    val selectedCategoryId: String,
-    val categoryDataMap: Map<String, List<String>>,
+    val selectedCategory: Int,
+    val categoryDataMap: Map<Int, List<String>>,
 ) {
-
     companion object {
         val Empty = HomeUIModel(
             categories = emptyList(),
-            selectedCategoryId = "",
+            selectedCategory = 0,
             categoryDataMap = emptyMap()
         )
     }
