@@ -1,11 +1,9 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
-import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 
 data class HomeState(
-    val categories: List<CategoryItem> = emptyList(),
-    val selectedCategoryId: String = "",
-    val categoryDataMap: Map<String, List<String>> = emptyMap(),
+    val uiModel: HomeUIModel = HomeUIModel.Empty,
     val loadingCategoryIds: Set<String> = emptySet(),
     val errorMessage: String? = null
 )

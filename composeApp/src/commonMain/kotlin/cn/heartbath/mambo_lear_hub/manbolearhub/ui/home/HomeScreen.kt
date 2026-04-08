@@ -18,6 +18,7 @@ internal fun HomeScreen(
 ) {
 
     val homeState by viewModel.homeState.collectAsState()
+    val uiModel = homeState.uiModel
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -33,15 +34,15 @@ internal fun HomeScreen(
         )
 
         HomeCategoryNavBar(
-            categories = homeState.categories,
-            selectedCategoryId = homeState.selectedCategoryId,
+            categories = uiModel.categories,
+            selectedCategoryId = uiModel.selectedCategoryId,
             onSelectedChange = { viewModel.onCategorySelected(it.id) }
         )
 
         HomeCategoryContent(
-            selectedCategoryId = homeState.selectedCategoryId,
-            data = homeState.categoryDataMap[homeState.selectedCategoryId].orEmpty(),
-            isLoading = homeState.loadingCategoryIds.contains(homeState.selectedCategoryId),
+            selectedCategoryId = uiModel.selectedCategoryId,
+            data = uiModel.categoryDataMap[uiModel.selectedCategoryId].orEmpty(),
+            isLoading = homeState.loadingCategoryIds.contains(uiModel.selectedCategoryId),
             errorMessage = homeState.errorMessage
         )
     }

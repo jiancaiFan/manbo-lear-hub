@@ -2,6 +2,7 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeState
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
 import kotlinx.coroutines.delay
@@ -16,16 +17,18 @@ class HomeViewModel : ViewModel() {
 
     private val _homeState = MutableStateFlow(
         HomeState(
-            categories = listOf(
-                CategoryItem("1", "推荐"),
-                CategoryItem("2", "安卓"),
-                CategoryItem("3", "苹果"),
-                CategoryItem("4", "数码"),
-                CategoryItem("5", "汽车"),
-                CategoryItem("6", "科技"),
-                CategoryItem("7", "游戏"),
-                CategoryItem("8", "AI"),
-            ), selectedCategoryId = "1"
+            uiModel = HomeUIModel.Empty.copy(
+                categories = listOf(
+                    CategoryItem("1", "推荐"),
+                    CategoryItem("2", "安卓"),
+                    CategoryItem("3", "苹果"),
+                    CategoryItem("4", "数码"),
+                    CategoryItem("5", "汽车"),
+                    CategoryItem("6", "科技"),
+                    CategoryItem("7", "游戏"),
+                    CategoryItem("8", "AI"),
+                ), selectedCategoryId = "1"
+            )
         )
     )
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
@@ -35,15 +38,15 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onCategorySelected(categoryId: String) {
-        if (_homeState.value.selectedCategoryId == categoryId) return
+        if (_homeState.value.uiModel.selectedCategoryId == categoryId) return
 
-        _homeState.update { it.copy(selectedCategoryId = categoryId) }
+        _homeState.update { it.copy(uiModel = it.uiModel.copy(selectedCategoryId = categoryId)) }
         loadCategoryIfNeeded(categoryId)
     }
 
     private fun loadCategoryIfNeeded(categoryId: String) {
         val state = _homeState.value
-        if (state.categoryDataMap.containsKey(categoryId)) return
+        if (state.uiModel.categoryDataMap.containsKey(categoryId)) return
         if (state.loadingCategoryIds.contains(categoryId)) return
 
         viewModelScope.launch {
@@ -60,7 +63,9 @@ class HomeViewModel : ViewModel() {
 
                 _homeState.update {
                     it.copy(
-                        categoryDataMap = it.categoryDataMap + (categoryId to data),
+                        uiModel = it.uiModel.copy(
+                            categoryDataMap = it.uiModel.categoryDataMap + (categoryId to data),
+                        ),
                         loadingCategoryIds = it.loadingCategoryIds - categoryId
                     )
                 }
