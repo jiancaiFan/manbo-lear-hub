@@ -2,84 +2,58 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeAction
 import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeState
-import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeStoreProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 class HomeViewModel : ViewModel() {
 
-    private val _homeState = MutableStateFlow(
-        HomeState(
-            uiModel = HomeUIModel.Empty.copy(
-                categories = listOf(
-                    CategoryItem("1", "推荐"),
-                    CategoryItem("2", "安卓"),
-                    CategoryItem("3", "苹果"),
-                    CategoryItem("4", "数码"),
-                    CategoryItem("5", "汽车"),
-                    CategoryItem("6", "科技"),
-                    CategoryItem("7", "游戏"),
-                    CategoryItem("8", "AI"),
-                ),
-                selectedCategory = 0
-            )
-        )
-    )
+    private val store = HomeStoreProvider.store
+
+    private val _homeState = MutableStateFlow(store.state)
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
 
+    private val unsubscribe: () -> Unit = store.subscribe {
+        _homeState.value = store.state
+    }
+
     init {
-        loadCategoryIfNeeded(0)
+        loadCategoryIfNeeded(store.state.uiModel.selectedCategory)
     }
 
     fun onCategorySelected(position: Int) {
-        val categories = _homeState.value.uiModel.categories
-        if (position !in categories.indices) return
-        if (_homeState.value.uiModel.selectedCategory == position) return
+        val state = store.state
+        if (position !in state.uiModel.categories.indices) return
+        if (position == state.uiModel.selectedCategory) return
 
-        _homeState.update { state ->
-            state.copy(uiModel = state.uiModel.copy(selectedCategory = position))
-        }
+        store.dispatch(HomeAction.SelectCategory(position))
         loadCategoryIfNeeded(position)
     }
 
     private fun loadCategoryIfNeeded(position: Int) {
-        val state = _homeState.value
+        val state = store.state
         if (position !in state.uiModel.categories.indices) return
         if (state.uiModel.categoryDataMap.containsKey(position)) return
         if (state.loadingCategories.contains(position)) return
 
         viewModelScope.launch {
-            _homeState.update {
-                it.copy(
-                    loadingCategories = it.loadingCategories + position,
-                    errorMessage = null
-                )
-            }
-
+            store.dispatch(HomeAction.LoadCategoryStarted(position))
             try {
                 val data = fetchCategoryData(position)
-                _homeState.update {
-                    it.copy(
-                        uiModel = it.uiModel.copy(
-                            categoryDataMap = it.uiModel.categoryDataMap + (position to data)
-                        ),
-                        loadingCategories = it.loadingCategories - position
-                    )
-                }
+                store.dispatch(HomeAction.LoadCategorySucceeded(position, data))
             } catch (e: Exception) {
-                _homeState.update {
-                    it.copy(
-                        loadingCategories = it.loadingCategories - position,
-                        errorMessage = e.message ?: "加载失败"
+                store.dispatch(
+                    HomeAction.LoadCategoryFailed(
+                        position = position,
+                        message = e.message ?: "加载失败"
                     )
-                }
+                )
             }
         }
     }
@@ -91,5 +65,10 @@ class HomeViewModel : ViewModel() {
             "分类 position=$position 的数据 2",
             "分类 position=$position 的数据 3"
         )
+    }
+
+    override fun onCleared() {
+        unsubscribe()
+        super.onCleared()
     }
 }

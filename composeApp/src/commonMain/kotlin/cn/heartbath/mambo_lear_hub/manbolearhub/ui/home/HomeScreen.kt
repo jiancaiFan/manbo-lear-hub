@@ -27,16 +27,16 @@ internal fun HomeScreen(
     ) {
         HomeTopBar(
             unreadCount = 8,
-            onProfileClick = { /* TODO */ },
-            onSearchClick = { /* TODO */ },
-            onMessageClick = { /* TODO */ },
-            onQuickActionClick = { /* TODO */ },
+            onProfileClick = { },
+            onSearchClick = { },
+            onMessageClick = { },
+            onQuickActionClick = { },
         )
 
         HomeCategoryNavBar(
             categories = uiModel.categories,
             selectedCategory = selectedCategory,
-            onSelectedChange = { position -> viewModel.onCategorySelected(position) }
+            onSelectedChange = viewModel::onCategorySelected
         )
 
         HomeCategoryContent(
