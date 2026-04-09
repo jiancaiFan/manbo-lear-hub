@@ -56,6 +56,7 @@ internal fun HomeCategoryContent(
                 ) {
                     items(data.size) { index ->
                         Text(text = data[index])
+                        Text(text = "当前分类: $selectedCategoryId")
                     }
                 }
             }

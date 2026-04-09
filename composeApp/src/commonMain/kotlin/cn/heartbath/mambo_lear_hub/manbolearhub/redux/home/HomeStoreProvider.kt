@@ -1,13 +1,25 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.repository.home.HomeRepository
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
 import org.reduxkotlin.Store
+import org.reduxkotlin.applyMiddleware
 import org.reduxkotlin.threadsafe.createThreadSafeStore
 
 object HomeStoreProvider {
 
-    private val initialState = HomeState(
+    fun create(repository: HomeRepository): Store<HomeState> {
+        val middleware = HomeSideEffect.createHomeMiddleware(repository)
+
+        return createThreadSafeStore(
+            reducer = homeReducer,
+            preloadedState = initialState(),
+            enhancer = applyMiddleware(middleware)
+        )
+    }
+
+    private fun initialState(): HomeState = HomeState(
         uiModel = HomeUIModel.Empty.copy(
             categories = listOf(
                 CategoryItem("1", "推荐"),
@@ -21,10 +33,5 @@ object HomeStoreProvider {
             ),
             selectedCategory = 0
         )
-    )
-
-    val store: Store<HomeState> = createThreadSafeStore(
-        reducer = homeReducer,
-        preloadedState = initialState
     )
 }

@@ -42,8 +42,8 @@ internal fun HomeScreen(
         HomeCategoryContent(
             selectedCategoryId = uiModel.categories.getOrNull(selectedCategory)?.id.orEmpty(),
             data = uiModel.categoryDataMap[selectedCategory] ?: emptyList(),
-            isLoading = homeState.loadingCategories.contains(selectedCategory),
-            errorMessage = homeState.errorMessage
+            isLoading = homeState.isLoading && homeState.loadingCategories.contains(selectedCategory),
+            errorMessage = if (homeState.isError) homeState.errorMessage else null
         )
     }
 }
