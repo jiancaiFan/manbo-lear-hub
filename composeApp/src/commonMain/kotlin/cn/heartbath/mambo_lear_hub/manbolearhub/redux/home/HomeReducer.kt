@@ -2,46 +2,63 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
 val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
     when (action) {
-        is HomeAction.SelectCategory -> {
+        is HomeAction.HomeCategoriesLoading -> {
             state.copy(
-                uiModel = state.uiModel.copy(selectedCategory = action.position)
-            )
-        }
-
-        is HomeAction.LoadCategoryStarted -> {
-            val newLoading = state.loadingCategories + action.position
-            state.copy(
-                isLoading = newLoading.isNotEmpty(),
+                isLoading = true,
                 isSuccess = false,
                 isError = false,
-                errorMessage = null,
-                loadingCategories = newLoading
+                errorMessage = null
             )
         }
 
-        is HomeAction.LoadCategorySucceeded -> {
-            val newLoading = state.loadingCategories - action.position
+        is HomeAction.HomeCategoriesLoad -> {
+            state.copy(
+                uiModel = state.uiModel.copy(
+                    categories = action.categories,
+                    selectedCategory = 0
+                ),
+                isLoading = false,
+                isSuccess = true,
+                isError = false,
+                errorMessage = null
+            )
+        }
+
+        is HomeAction.HomeCategoriesError -> {
+            state.copy(
+                isLoading = false,
+                isSuccess = false,
+                isError = true,
+                errorMessage = action.message
+            )
+        }
+
+        is HomeAction.HomeCategorySelect -> {
+            state.copy(
+                uiModel = state.uiModel.copy(selectedCategory = action.position),
+                isError = false,
+                errorMessage = null
+            )
+        }
+
+        is HomeAction.HomeCategoryLoading -> {
+            state.copy(isLoading = true, isSuccess = false, isError = false, errorMessage = null)
+        }
+
+        is HomeAction.HomeCategoryLoad -> {
             state.copy(
                 uiModel = state.uiModel.copy(
                     categoryDataMap = state.uiModel.categoryDataMap + (action.position to action.data)
                 ),
-                isLoading = newLoading.isNotEmpty(),
+                isLoading = false,
                 isSuccess = true,
                 isError = false,
-                errorMessage = null,
-                loadingCategories = newLoading
+                errorMessage = null
             )
         }
 
-        is HomeAction.LoadCategoryFailed -> {
-            val newLoading = state.loadingCategories - action.position
-            state.copy(
-                isLoading = newLoading.isNotEmpty(),
-                isSuccess = false,
-                isError = true,
-                errorMessage = action.message,
-                loadingCategories = newLoading
-            )
+        is HomeAction.HomeCategoryError -> {
+            state.copy(isLoading = false, isSuccess = false, isError = true, errorMessage = action.message)
         }
 
         else -> state

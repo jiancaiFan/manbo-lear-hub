@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeTopBar(
+fun HomeTopActionBar(
     searchHint: String = "搜索你感兴趣的内容",
     unreadCount: Int? = null,
     onProfileClick: () -> Unit = {},

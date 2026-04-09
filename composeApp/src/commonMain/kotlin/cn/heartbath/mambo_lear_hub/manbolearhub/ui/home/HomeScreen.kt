@@ -25,7 +25,7 @@ internal fun HomeScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        HomeTopBar(
+        HomeTopActionBar(
             unreadCount = 8,
             onProfileClick = { },
             onSearchClick = { },
@@ -42,7 +42,7 @@ internal fun HomeScreen(
         HomeCategoryContent(
             selectedCategoryId = uiModel.categories.getOrNull(selectedCategory)?.id.orEmpty(),
             data = uiModel.categoryDataMap[selectedCategory] ?: emptyList(),
-            isLoading = homeState.isLoading && homeState.loadingCategories.contains(selectedCategory),
+            isLoading = homeState.isLoading,
             errorMessage = if (homeState.isError) homeState.errorMessage else null
         )
     }

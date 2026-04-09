@@ -17,14 +17,14 @@ class HomeViewModel(
     private val unsubscribe = store.subscribe { _homeState.value = store.state }
 
     init {
-        store.dispatch(HomeAction.SelectCategory(store.state.uiModel.selectedCategory))
+        store.dispatch(HomeAction.HomeCategoriesFetch)
     }
 
     fun onCategorySelected(position: Int) {
-        val state = store.state
-        if (position !in state.uiModel.categories.indices) return
-        if (position == state.uiModel.selectedCategory) return
-        store.dispatch(HomeAction.SelectCategory(position))
+        val categories = store.state.uiModel.categories
+        if (position !in categories.indices) return
+        if (position == store.state.uiModel.selectedCategory) return
+        store.dispatch(HomeAction.HomeCategorySelect(position))
     }
 
     override fun onCleared() {
