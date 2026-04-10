@@ -1,22 +1,25 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.CategoryItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.response.CategoryResponse
+import cn.heartbath.mambo_lear_hub.manbolearhub.network.NetworkClient
 import cn.heartbath.mambo_lear_hub.manbolearhub.repository.home.HomeRepository
+import kotlinx.serialization.json.Json
 
-class HomeRepositoryImpl : HomeRepository {
+class HomeRepositoryImpl(
+    private val networkClient: NetworkClient
+) : HomeRepository {
+
+    private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun fetchCategories(): List<CategoryItem> {
-        // TODO 替换真实接口
-        return listOf(
-            CategoryItem("1", "推荐"),
-            CategoryItem("2", "安卓"),
-            CategoryItem("3", "苹果"),
-            CategoryItem("4", "数码")
-        )
+        val raw = networkClient.get("/api/categories")
+        val list = json.decodeFromString<List<CategoryResponse>>(raw)
+        return list.map { CategoryItem(id = it.id, title = it.title) }
     }
 
     override suspend fun fetchCategoryData(position: Int): List<String> {
-        // TODO 替换真实接口
-        return listOf("分类$position-1", "分类$position-2")
+        val raw = networkClient.get("/api/category/content?position=$position")
+        return json.decodeFromString<List<String>>(raw)
     }
 }
