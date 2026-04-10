@@ -11,10 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
 
 @Composable
 internal fun HomeCategoryContent(
-    data: List<String>,
+    data: List<PostItem>,
     isLoading: Boolean,
     errorMessage: String?
 ) {
@@ -54,7 +55,7 @@ internal fun HomeCategoryContent(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(data.size) { index ->
-                        Text(text = data[index])
+                        Text(text = data[index].toString())
                     }
                 }
             }

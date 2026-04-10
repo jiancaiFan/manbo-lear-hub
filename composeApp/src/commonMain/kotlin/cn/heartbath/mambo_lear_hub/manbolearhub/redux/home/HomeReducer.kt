@@ -53,7 +53,9 @@ val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
         is HomeAction.HomeCategoryLoad -> {
             state.copy(
                 uiModel = state.uiModel.copy(
-                    categoryDataMap = state.uiModel.categoryDataMap + (action.position to action.data)
+                    categoryDataMap = state.uiModel.categoryDataMap
+                        .toMutableMap()
+                        .apply { this[action.position] = action.data }
                 ),
                 isLoading = false,
                 isSuccess = true,

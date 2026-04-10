@@ -39,7 +39,7 @@ object HomeSideEffect {
                         val state = store.state
                         val notLoaded = !state.uiModel.categoryDataMap.containsKey(p)
                         if (notLoaded && !state.isLoading) {
-                            store.dispatch(HomeAction.HomeCategoryFetch(p))
+                            store.dispatch(HomeAction.HomeCategoryFetch(p, action.url))
                         }
                     }
 
@@ -47,7 +47,7 @@ object HomeSideEffect {
                         val p = action.position
                         store.dispatch(HomeAction.HomeCategoryLoading(p))
                         scope.launch {
-                            runCatching { repository.fetchCategoryData(p) }
+                            runCatching { repository.fetchCategoryData(action.path) }
                                 .onSuccess { data ->
                                     store.dispatch(HomeAction.HomeCategoryLoad(p, data))
                                 }

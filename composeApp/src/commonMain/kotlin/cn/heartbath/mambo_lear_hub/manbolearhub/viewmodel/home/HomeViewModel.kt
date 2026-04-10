@@ -20,11 +20,11 @@ class HomeViewModel(
         store.dispatch(HomeAction.HomeCategoriesFetch)
     }
 
-    fun onCategorySelected(position: Int) {
+    fun onCategorySelected(position: Int, url: String) {
         val categories = store.state.uiModel.categories
         if (position !in categories.indices) return
         if (position == store.state.uiModel.selectedCategory) return
-        store.dispatch(HomeAction.HomeCategorySelect(position))
+        store.dispatch(HomeAction.HomeCategorySelect(position, url))
     }
 
     override fun onCleared() {
