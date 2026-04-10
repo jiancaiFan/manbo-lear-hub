@@ -1,12 +1,10 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.home.HomeViewModel
 import org.koin.compose.koinInject
@@ -17,32 +15,31 @@ internal fun HomeScreen(
     viewModel: HomeViewModel = koinInject()
 ) {
     val homeState by viewModel.homeState.collectAsState()
-    val uiModel = homeState.uiModel
-    val selectedCategory = uiModel.selectedCategory
+    val homeUiModel = homeState.uiModel
+    val selectedCategory = homeUiModel.selectedCategory
+    val currentCategoryPostList = homeUiModel.categoryDataMap[selectedCategory].orEmpty()
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize()
     ) {
         HomeTopActionBar(
             unreadCount = 8,
-            onProfileClick = { },
-            onSearchClick = { },
-            onMessageClick = { },
-            onQuickActionClick = { },
+            onProfileClick = {},
+            onSearchClick = {},
+            onMessageClick = {},
+            onQuickActionClick = {}
         )
 
         HomeCategoryNavBar(
-            categories = uiModel.categories,
+            categories = homeUiModel.categories,
             selectedCategory = selectedCategory,
             onSelectedChange = viewModel::onCategorySelected
         )
 
         HomeCategoryContent(
-            data = uiModel.categoryDataMap[selectedCategory] ?: emptyList(),
+            data = currentCategoryPostList,
             isLoading = homeState.isLoading,
-            errorMessage = if (homeState.isError) homeState.errorMessage else null
+            errorMessage = homeState.errorMessage.takeIf { homeState.isError }
         )
     }
 }
