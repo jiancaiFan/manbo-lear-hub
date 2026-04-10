@@ -62,7 +62,7 @@ internal fun HomeCategoryNavBar(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = item.title,
+                    text = item.name,
                     fontSize = 15.sp,
                     color = if (selected) Color(0xFFE53935) else Color(0xFF333333)
                 )

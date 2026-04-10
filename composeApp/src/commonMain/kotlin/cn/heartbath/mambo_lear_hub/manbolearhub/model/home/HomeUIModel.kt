@@ -14,7 +14,7 @@ data class HomeUIModel(
     }
 
     data class CategoryItem(
-        val id: String,
-        val title: String
+        val name: String,
+        val url: String
     )
 }

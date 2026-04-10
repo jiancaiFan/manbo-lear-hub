@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun HomeCategoryContent(
-    selectedCategoryId: String,
     data: List<String>,
     isLoading: Boolean,
     errorMessage: String?
@@ -56,7 +55,6 @@ internal fun HomeCategoryContent(
                 ) {
                     items(data.size) { index ->
                         Text(text = data[index])
-                        Text(text = "当前分类: $selectedCategoryId")
                     }
                 }
             }

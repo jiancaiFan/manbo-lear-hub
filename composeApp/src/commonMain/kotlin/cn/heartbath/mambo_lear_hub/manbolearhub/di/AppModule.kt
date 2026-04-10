@@ -13,7 +13,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.reduxkotlin.Store
 
-private const val BASE_URL = "https://your-api-domain.com"
+private const val BASE_URL = "https://43.139.98.90/"
 
 val appModule = module {
     single { ManBoLearHubViewModel() }
