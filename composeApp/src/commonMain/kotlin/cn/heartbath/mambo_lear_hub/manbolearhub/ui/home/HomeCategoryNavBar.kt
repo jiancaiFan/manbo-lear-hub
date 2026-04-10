@@ -27,15 +27,11 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-data class CategoryItem(
-    val id: String,
-    val title: String
-)
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 
 @Composable
 internal fun HomeCategoryNavBar(
-    categories: List<CategoryItem>,
+    categories: List<HomeUIModel.CategoryItem>,
     selectedCategory: Int,
     onSelectedChange: (Int) -> Unit
 ) {

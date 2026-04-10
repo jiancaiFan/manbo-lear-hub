@@ -42,7 +42,12 @@ val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
         }
 
         is HomeAction.HomeCategoryLoading -> {
-            state.copy(isLoading = true, isSuccess = false, isError = false, errorMessage = null)
+            state.copy(
+                isLoading = true,
+                isSuccess = false,
+                isError = false,
+                errorMessage = null
+            )
         }
 
         is HomeAction.HomeCategoryLoad -> {
@@ -58,7 +63,12 @@ val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
         }
 
         is HomeAction.HomeCategoryError -> {
-            state.copy(isLoading = false, isSuccess = false, isError = true, errorMessage = action.message)
+            state.copy(
+                isLoading = false,
+                isSuccess = false,
+                isError = true,
+                errorMessage = action.message
+            )
         }
 
         else -> state

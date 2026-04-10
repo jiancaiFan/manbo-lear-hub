@@ -1,11 +1,11 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
-import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 
 sealed interface HomeAction {
     data object HomeCategoriesFetch : HomeAction
     data object HomeCategoriesLoading : HomeAction
-    data class HomeCategoriesLoad(val categories: List<CategoryItem>) : HomeAction
+    data class HomeCategoriesLoad(val categories: List<HomeUIModel.CategoryItem>) : HomeAction
     data class HomeCategoriesError(val message: String) : HomeAction
     data class HomeCategorySelect(val position: Int) : HomeAction
     data class HomeCategoryFetch(val position: Int) : HomeAction

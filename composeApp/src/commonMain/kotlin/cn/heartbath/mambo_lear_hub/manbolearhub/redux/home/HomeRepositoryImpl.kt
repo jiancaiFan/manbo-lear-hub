@@ -1,7 +1,7 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.CategoryItem
 import cn.heartbath.mambo_lear_hub.manbolearhub.repository.home.HomeRepository
-import cn.heartbath.mambo_lear_hub.manbolearhub.ui.home.CategoryItem
 
 class HomeRepositoryImpl : HomeRepository {
 
