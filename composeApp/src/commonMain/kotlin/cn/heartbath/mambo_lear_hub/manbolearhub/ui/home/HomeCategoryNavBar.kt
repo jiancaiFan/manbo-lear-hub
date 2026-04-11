@@ -54,7 +54,7 @@ internal fun HomeCategoryNavBar(
                     .padding(horizontal = 12.dp)
                     .semantics {
                         this.selected = selected
-                        role = Role.Tab
+                        role = Role.RadioButton
                     }
                     .clickable { onSelectedChange(position, item.url) }
                     .wrapContentWidth(),

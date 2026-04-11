@@ -10,10 +10,8 @@ import org.reduxkotlin.Store
 class HomeViewModel(
     private val store: Store<HomeState>
 ) : ViewModel() {
-
     private val _homeState = MutableStateFlow(store.state)
     val homeState = _homeState.asStateFlow()
-
     private val unsubscribe = store.subscribe { _homeState.value = store.state }
 
     init {
