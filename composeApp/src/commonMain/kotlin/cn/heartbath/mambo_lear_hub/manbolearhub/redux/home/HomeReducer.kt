@@ -73,6 +73,34 @@ val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
             )
         }
 
+        is HomeAction.HomeForumLoading -> {
+            state.copy(
+                isLoading = true,
+                isSuccess = false,
+                isError = false,
+                errorMessage = null
+            )
+        }
+        is HomeAction.HomeForumLoad -> {
+            state.copy(
+                uiModel = state.uiModel.copy(
+                    forumCategories = action.data
+                ),
+                isLoading = false,
+                isSuccess = true,
+                isError = false,
+                errorMessage = null
+            )
+        }
+        is HomeAction.HomeForumError -> {
+            state.copy(
+                isLoading = false,
+                isSuccess = false,
+                isError = true,
+                errorMessage = action.message
+            )
+        }
+
         else -> state
     }
 }

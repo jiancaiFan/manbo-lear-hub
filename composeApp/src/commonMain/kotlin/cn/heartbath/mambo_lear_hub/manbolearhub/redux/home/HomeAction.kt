@@ -11,10 +11,15 @@ sealed interface HomeAction {
 
     data class HomeCategorySelect(val position: Int) : HomeAction
     data class HomeCategoryFetch(val position: Int) : HomeAction
-
     data object HomeCategoryLoading : HomeAction
 
     data class HomeCategoryLoad(val position: Int, val data: List<PostItem>) : HomeAction
 
     data class HomeCategoryError(val message: String) : HomeAction
+
+    data class HomeForumSelect(val position: Int) : HomeAction
+    data class HomeForumFetch(val position: Int) : HomeAction
+    data object HomeForumLoading : HomeAction
+    data class HomeForumLoad(val position: Int, val data: List<HomeUIModel.ForumCategory>) : HomeAction
+    data class HomeForumError(val message: String) : HomeAction
 }

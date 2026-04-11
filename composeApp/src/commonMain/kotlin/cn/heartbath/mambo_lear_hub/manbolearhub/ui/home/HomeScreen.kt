@@ -17,6 +17,7 @@ internal fun HomeScreen(
     val homeState by viewModel.homeState.collectAsState()
     val homeUiModel = homeState.uiModel
     val selectedCategory = homeUiModel.selectedCategory
+    val isLastCategory = selectedCategory == homeUiModel.categories.lastIndex
     val currentCategoryPostList = homeUiModel.categoryDataMap[selectedCategory].orEmpty()
 
     Column(
@@ -36,10 +37,18 @@ internal fun HomeScreen(
             onSelectedChange = viewModel::onCategorySelected
         )
 
-        HomeCategoryContent(
-            data = currentCategoryPostList,
-            isLoading = homeState.isLoading,
-            errorMessage = homeState.errorMessage.takeIf { homeState.isError }
-        )
+        if (isLastCategory) {
+            HomeForumContent(
+                forumCategories = homeUiModel.forumCategories,
+                isLoading = homeState.isLoading,
+                errorMessage = homeState.errorMessage.takeIf { homeState.isError }
+            )
+        } else {
+            HomeCategoryContent(
+                data = currentCategoryPostList,
+                isLoading = homeState.isLoading,
+                errorMessage = homeState.errorMessage.takeIf { homeState.isError }
+            )
+        }
     }
 }

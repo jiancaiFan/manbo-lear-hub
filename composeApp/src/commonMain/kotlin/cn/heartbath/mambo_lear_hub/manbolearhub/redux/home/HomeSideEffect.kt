@@ -39,7 +39,11 @@ object HomeSideEffect {
                         val state = store.state
                         val notLoaded = !state.uiModel.categoryDataMap.containsKey(p)
                         if (notLoaded && !state.isLoading) {
-                            store.dispatch(HomeAction.HomeCategoryFetch(p))
+                            if (p == state.uiModel.categories.lastIndex) {
+                                store.dispatch(HomeAction.HomeForumFetch(p))
+                            } else {
+                                store.dispatch(HomeAction.HomeCategoryFetch(p))
+                            }
                         }
                     }
 
@@ -56,6 +60,23 @@ object HomeSideEffect {
                                     .onFailure { e ->
                                         // ✅ 不再传 position
                                         store.dispatch(HomeAction.HomeCategoryError(e.message ?: "加载失败"))
+                                    }
+                            }
+                        }
+                    }
+
+                    is HomeAction.HomeForumFetch -> {
+                        val p = action.position
+                        val path = store.state.uiModel.categories.getOrNull(p)?.url
+                        if (!path.isNullOrBlank()) {
+                            store.dispatch(HomeAction.HomeForumLoading)
+                            scope.launch {
+                                runCatching { repository.fetchForumData(path) }
+                                    .onSuccess { data ->
+                                        store.dispatch(HomeAction.HomeForumLoad(p, data))
+                                    }
+                                    .onFailure { e ->
+                                        store.dispatch(HomeAction.HomeForumError(e.message ?: "板块加载失败"))
                                     }
                             }
                         }
