@@ -39,23 +39,29 @@ object HomeSideEffect {
                         val state = store.state
                         val notLoaded = !state.uiModel.categoryDataMap.containsKey(p)
                         if (notLoaded && !state.isLoading) {
-                            store.dispatch(HomeAction.HomeCategoryFetch(p, action.url))
+                            store.dispatch(HomeAction.HomeCategoryFetch(p))
                         }
                     }
 
                     is HomeAction.HomeCategoryFetch -> {
                         val p = action.position
-                        store.dispatch(HomeAction.HomeCategoryLoading(p))
-                        scope.launch {
-                            runCatching { repository.fetchCategoryData(action.path) }
-                                .onSuccess { data ->
-                                    store.dispatch(HomeAction.HomeCategoryLoad(p, data))
-                                }
-                                .onFailure { e ->
-                                    store.dispatch(HomeAction.HomeCategoryError(p, e.message ?: "加载失败"))
-                                }
+                        val path = store.state.uiModel.categories.getOrNull(p)?.url
+                        if (!path.isNullOrBlank()) {
+                            store.dispatch(HomeAction.HomeCategoryLoading)
+                            scope.launch {
+                                runCatching { repository.fetchCategoryData(path) }
+                                    .onSuccess { data ->
+                                        store.dispatch(HomeAction.HomeCategoryLoad(p, data))
+                                    }
+                                    .onFailure { e ->
+                                        // ✅ 不再传 position
+                                        store.dispatch(HomeAction.HomeCategoryError(e.message ?: "加载失败"))
+                                    }
+                            }
                         }
                     }
+
+                    else -> Unit
                 }
             }
         }
