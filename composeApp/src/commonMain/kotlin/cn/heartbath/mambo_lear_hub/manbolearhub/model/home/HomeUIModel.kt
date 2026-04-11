@@ -19,15 +19,15 @@ data class HomeUIModel(
     )
 
     data class PostItem(
-        val title: String?,               // 帖子标题
-        val summary: String?,             // 帖子简介
-        val username: String?,            // 发帖人
-        val postTime: String?,            // 发帖时间
-        val forumName: String?,           // 版块名称
-        val readCount: Int?,              // 阅读数
-        val replyCount: Int?,             // 回复数
-        val imageList: List<String>,      // 图片列表（多图）
-        val detailUrl: String?,           // 帖子详情链接
-        val avatarUrl: String?            // 用户头像
+        val title: String?,
+        val summary: String?,
+        val username: String?,
+        val postTime: String?,
+        val forumName: String?,
+        val readCount: Int?,
+        val replyCount: Int?,
+        val imageList: List<String>,
+        val detailUrl: String?,
+        val avatarUrl: String?
     )
 }
