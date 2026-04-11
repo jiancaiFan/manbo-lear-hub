@@ -2,6 +2,7 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.redux.home
 
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.CategoryItem
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.ForumCategory
 import cn.heartbath.mambo_lear_hub.manbolearhub.network.NetworkClient
 import cn.heartbath.mambo_lear_hub.manbolearhub.repository.home.HomeRepository
 import com.fleeksoft.ksoup.Ksoup
@@ -83,6 +84,47 @@ class HomeRepositoryImpl(
                 imageList = imageList,
                 detailUrl = detailUrl,
                 avatarUrl = avatarUrl
+            )
+        }
+    }
+
+    override suspend fun fetchForumData(path: String): List<ForumCategory> {
+        val html = networkClient.get(path)
+        val doc = Ksoup.parse(html)
+
+        return doc.select("div.subforumshow").mapNotNull { categoryDiv ->
+            val categoryName = categoryDiv.selectFirst("h2 > a")?.text()?.trim()
+            if (categoryName.isNullOrBlank()) return@mapNotNull null
+
+            val subForumSelector = categoryDiv.attr("href")
+            if (subForumSelector.isBlank() || !subForumSelector.startsWith("#")) return@mapNotNull null
+            val forumListUl = doc.selectFirst("$subForumSelector ul") ?: return@mapNotNull null
+
+            val forumList = forumListUl.select("li").mapNotNull { li ->
+                val forumA = li.selectFirst("a.murl") ?: return@mapNotNull null
+
+                val mtitNode = forumA.selectFirst(".mtit")
+                val forumName = mtitNode?.ownText()?.trim().orEmpty()
+                if (forumName.isEmpty()) return@mapNotNull null
+
+                val forumHref = toAbsUrl(forumA.attr("href"))
+                val iconSvg = li.selectFirst(".micon > a")?.selectFirst("svg")?.outerHtml()?.takeIf { it.isNotBlank() }
+                val todayThreads = forumA.selectFirst(".mnum")?.text()?.trim()?.toIntOrNull()
+                val description = forumA.selectFirst(".mtxt")?.text()?.trim().takeIf { !it.isNullOrBlank() }
+
+                ForumCategory.ForumInfo(
+                    forumName = forumName,
+                    forumUrl = forumHref,
+                    iconSvg = iconSvg,
+                    todayThreads = todayThreads,
+                    description = description
+                )
+            }
+
+            if (forumList.isEmpty()) return@mapNotNull null
+            ForumCategory(
+                categoryName = categoryName,
+                forumList = forumList
             )
         }
     }
