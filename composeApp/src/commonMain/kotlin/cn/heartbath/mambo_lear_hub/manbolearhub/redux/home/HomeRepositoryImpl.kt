@@ -11,23 +11,37 @@ class HomeRepositoryImpl(
     private val baseUrl: String
 ) : HomeRepository {
 
-    private fun toAbsUrl(url: String): String {
-        val u = url.trim()
-        if (u.startsWith("http://") || u.startsWith("https://")) return u
-        return baseUrl + u.removePrefix("/").removePrefix("./")
+    private fun normalizedBaseUrl(): String = baseUrl.trim().trimEnd('/') + "/"
+
+    private fun toAbsUrl(url: String?): String {
+        if (url.isNullOrBlank()) return ""
+
+        val raw = url.trim().replace("&amp;", "&")
+        val base = normalizedBaseUrl()
+
+        return when {
+            raw.startsWith("http://") || raw.startsWith("https://") -> raw
+            raw.startsWith("//") -> "http:$raw"
+            raw.startsWith("/") -> base.trimEnd('/') + raw
+            raw.startsWith("./") -> base + raw.removePrefix("./")
+            else -> base + raw
+        }
     }
 
     override suspend fun fetchCategories(): List<CategoryItem> {
         val html = networkClient.get("forum.php?mod=guide&view=newthread&mobile=2")
         val doc = Ksoup.parse(html)
 
-        val elements = doc.select(".dhnv a.flex")
-        return elements.map {
-            CategoryItem(
-                name = it.text().trim(),
-                url = it.attr("href"),
-            )
-        }
+        val excludedNames = setOf("回复", "抢沙发")
+
+        return doc.select(".dhnv a.flex")
+            .map {
+                CategoryItem(
+                    name = it.text().trim(),
+                    url = it.attr("href").trim()
+                )
+            }
+            .filter { it.name !in excludedNames }
     }
 
     override suspend fun fetchCategoryData(path: String): List<PostItem> {
@@ -35,38 +49,27 @@ class HomeRepositoryImpl(
         val doc = Ksoup.parse(html)
 
         return doc.select(".threadlist > ul > li.list").map { item ->
-            // 标题
             val title = item.select(".threadlist_tit em").text().trim()
-
-            // 简介
             val summary = item.select(".threadlist_mes").text().trim()
-
-            // 用户名
             val username = item.select(".muser h3 a").text().trim()
-
-            // 时间
             val postTime = item.select(".mtime").text().trim()
-
-            // 版块
             val forumName = item.select(".threadlist_foot a").text().trim().removePrefix("#")
-
-            // 阅读数
             val readCount = item.select(".threadlist_foot li:eq(1)").text().trim().toIntOrNull()
-
-            // 回复数
             val replyCount = item.select(".threadlist_foot li:eq(2)").text().trim().toIntOrNull()
 
-            // 图片列表（改：拼接绝对 URL）
-            val imageList = item.select(".threadlist_imgs1 img")
-                .map { toAbsUrl(it.attr("src")) }
+            val imageList = item
+                .select(".threadlist_imgs1 img, .threadlist_imgs img")
+                .mapNotNull { img ->
+                    val raw = img.attr("src").ifBlank { img.attr("data-src") }.trim()
+                    toAbsUrl(raw).ifBlank { null }
+                }
+                .distinct()
 
-            // 详情链接（不改）
             val detailUrl = item.select("a[href*=viewthread]").attr("href").trim()
 
-            // 头像（改：优先 data-src，空则 src，并拼接绝对 URL）
             val avatarRaw = item.select(".mimg img").attr("data-src").ifBlank {
                 item.select(".mimg img").attr("src")
-            }
+            }.trim()
             val avatarUrl = toAbsUrl(avatarRaw)
 
             PostItem(
