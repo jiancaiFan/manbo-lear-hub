@@ -25,6 +25,13 @@ class HomeViewModel(
         store.dispatch(HomeAction.HomeCategorySelect(position))
     }
 
+    fun onForumCategorySelected(categoryIndex: Int) {
+        val forumCategories = store.state.uiModel.forumCategories
+        if (categoryIndex !in forumCategories.indices) return
+        if (categoryIndex == store.state.uiModel.selectedForumCategory) return
+        store.dispatch(HomeAction.HomeForumSelect(categoryIndex))
+    }
+
     override fun onCleared() {
         unsubscribe()
         super.onCleared()

@@ -3,6 +3,7 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.model.home
 data class HomeUIModel(
     val categories: List<CategoryItem>,
     val selectedCategory: Int,
+    val selectedForumCategory: Int,
     val categoryDataMap: Map<Int, List<PostItem>>,
     val forumCategories: List<ForumCategory>
 ) {
@@ -10,6 +11,7 @@ data class HomeUIModel(
         val Empty = HomeUIModel(
             categories = emptyList(),
             selectedCategory = 0,
+            selectedForumCategory = 0,
             categoryDataMap = emptyMap(),
             forumCategories = emptyList()
         )

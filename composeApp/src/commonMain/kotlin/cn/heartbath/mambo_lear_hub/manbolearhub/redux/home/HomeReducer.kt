@@ -73,6 +73,14 @@ val homeReducer: (HomeState, Any) -> HomeState = { state, action ->
             )
         }
 
+        is HomeAction.HomeForumSelect -> {
+            state.copy(
+                uiModel = state.uiModel.copy(selectedForumCategory = action.position),
+                isError = false,
+                errorMessage = null
+            )
+        }
+
         is HomeAction.HomeForumLoading -> {
             state.copy(
                 isLoading = true,

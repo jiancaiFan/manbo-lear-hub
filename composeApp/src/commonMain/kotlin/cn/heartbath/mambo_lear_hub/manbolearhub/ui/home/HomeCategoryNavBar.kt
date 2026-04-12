@@ -33,7 +33,7 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 internal fun HomeCategoryNavBar(
     categories: List<HomeUIModel.CategoryItem>,
     selectedCategory: Int,
-    onSelectedChange: (Int) -> Unit
+    onSelectedCategory: (Int) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -56,7 +56,7 @@ internal fun HomeCategoryNavBar(
                         this.selected = selected
                         role = Role.RadioButton
                     }
-                    .clickable { onSelectedChange(position) }
+                    .clickable { onSelectedCategory(position) }
                     .wrapContentWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
