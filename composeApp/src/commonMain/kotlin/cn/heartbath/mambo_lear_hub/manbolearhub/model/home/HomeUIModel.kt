@@ -37,14 +37,18 @@ data class HomeUIModel(
 
     data class ForumCategory(
         val categoryName: String,
-        val forumList: List<ForumInfo>
+        val forumList: List<ForumItem>
     ) {
-        data class ForumInfo(
-            val forumName: String,
-            val forumUrl: String,
-            val iconSvg: String?,
-            val todayThreads: Int?,
-            val description: String?
+        data class ForumItem(
+            val forumId: String,         // 版块 ID
+            val forumName: String,       // 版块名称
+            val forumDescription: String?, // 版块描述
+            val forumUrl: String,        // 完整链接
+            val iconUrl: String?,        // 版块图标
+            val threadCount: Int,     // 主题数
+            val postCount: Int,       // 回复数
+            val lastPostTime: String?,   // 最后回复时间
+            val lastPostAuthor: String?  // 最后回复作者
         )
     }
 }

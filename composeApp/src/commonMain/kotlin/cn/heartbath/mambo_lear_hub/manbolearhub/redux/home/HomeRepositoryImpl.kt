@@ -92,40 +92,42 @@ class HomeRepositoryImpl(
         val html = networkClient.get(path)
         val doc = Ksoup.parse(html)
 
-        return doc.select("div.subforumshow").mapNotNull { categoryDiv ->
-            val categoryName = categoryDiv.selectFirst("h2 > a")?.text()?.trim()
-            if (categoryName.isNullOrBlank()) return@mapNotNull null
+        return doc.select("div.bm.bmw.cl").mapNotNull { catEl ->
 
-            val subForumSelector = categoryDiv.attr("href")
-            if (subForumSelector.isBlank() || !subForumSelector.startsWith("#")) return@mapNotNull null
-            val forumListUl = doc.selectFirst("$subForumSelector ul") ?: return@mapNotNull null
+            val categoryName = catEl.select(".bm_h h2 a").text().trim()
 
-            val forumList = forumListUl.select("li").mapNotNull { li ->
-                val forumA = li.selectFirst("a.murl") ?: return@mapNotNull null
+            val forums = catEl.select(".fl_tb tr").mapNotNull { tr ->
+                val a = tr.select("td h2 a").firstOrNull() ?: return@mapNotNull null
+                val name = a.text().trim()
+                val url = a.attr("href").trim()
+                val fid = Regex("fid=(\\d+)").find(url)?.groupValues?.get(1) ?: return@mapNotNull null
 
-                val mtitNode = forumA.selectFirst(".mtit")
-                val forumName = mtitNode?.ownText()?.trim().orEmpty()
-                if (forumName.isEmpty()) return@mapNotNull null
+                val icon = toAbsUrl(tr.select("td.fl_icn img").attr("src").trim()).ifBlank { null }
+                val desc = tr.select("td p.xg2").text().trim().ifBlank { null }
 
-                val forumHref = toAbsUrl(forumA.attr("href"))
-                val iconSvg = li.selectFirst(".micon > a")?.selectFirst("svg")?.outerHtml()?.takeIf { it.isNotBlank() }
-                val todayThreads = forumA.selectFirst(".mnum")?.text()?.trim()?.toIntOrNull()
-                val description = forumA.selectFirst(".mtxt")?.text()?.trim().takeIf { !it.isNullOrBlank() }
+                val countParts = tr.select(".fl_i").text()
+                    .split("/")
+                    .map { it.trim().toIntOrNull() ?: 0 }
+                val threadCount = countParts.getOrElse(0) { 0 }
+                val postCount = countParts.getOrElse(1) { 0 }
 
-                ForumCategory.ForumInfo(
-                    forumName = forumName,
-                    forumUrl = forumHref,
-                    iconSvg = iconSvg,
-                    todayThreads = todayThreads,
-                    description = description
+                val lastTime = tr.select(".fl_by cite span").text().trim().ifBlank { null }
+                val lastAuthor = tr.select(".fl_by cite a").text().trim().ifBlank { null }
+
+                ForumCategory.ForumItem(
+                    forumId = fid,
+                    forumName = name,
+                    iconUrl = icon,
+                    forumDescription = desc,
+                    forumUrl = url,
+                    threadCount = threadCount,
+                    postCount = postCount,
+                    lastPostTime = lastTime,
+                    lastPostAuthor = lastAuthor
                 )
             }
 
-            if (forumList.isEmpty()) return@mapNotNull null
-            ForumCategory(
-                categoryName = categoryName,
-                forumList = forumList
-            )
+            if (forums.isEmpty()) null else ForumCategory(categoryName, forums)
         }
     }
 }

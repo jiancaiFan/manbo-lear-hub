@@ -71,7 +71,7 @@ object HomeSideEffect {
                         if (!path.isNullOrBlank()) {
                             store.dispatch(HomeAction.HomeForumLoading)
                             scope.launch {
-                                runCatching { repository.fetchForumData(path) }
+                                runCatching { repository.fetchForumData("forum.php?forumlist=1&mobile=no") }
                                     .onSuccess { data ->
                                         store.dispatch(HomeAction.HomeForumLoad(p, data))
                                     }
