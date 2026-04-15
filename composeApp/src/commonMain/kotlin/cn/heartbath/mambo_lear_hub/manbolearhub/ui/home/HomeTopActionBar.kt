@@ -3,6 +3,7 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,15 +24,28 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+
+private val ColorCard = Color.White
+private val ColorIconBg = Color(0xFFF1F5F9)
+private val ColorSearchBg = Color(0xFFF8FAFC)
+private val ColorPrimary = Color(0xFF2563EB)
+private val ColorTextPrimary = Color(0xFF111827)
+private val ColorTextHint = Color(0xFF9CA3AF)
+private val ColorBadge = Color(0xFFEF4444)
 
 @Composable
 fun HomeTopActionBar(
@@ -42,38 +56,59 @@ fun HomeTopActionBar(
     onMessageClick: () -> Unit = {},
     onQuickActionClick: () -> Unit = {},
 ) {
+    val noRipple = null
+    val interaction = remember { MutableInteractionSource() }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = Color(0x22000000),
+                spotColor = Color(0x18000000)
+            )
+            .clip(RoundedCornerShape(16.dp))
+            .background(ColorCard)
+            .padding(horizontal = 10.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Outlined.AccountCircle,
-            contentDescription = "Profile",
+        // 左侧头像按钮
+        Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(36.dp)
                 .clip(CircleShape)
+                .background(ColorIconBg)
                 .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
+                    interactionSource = interaction,
+                    indication = ripple(bounded = true, radius = 22.dp, color = Color(0x332563EB)),
                     role = Role.Button,
                     onClick = onProfileClick
                 )
-                .padding(6.dp)
-        )
+                .clearAndSetSemantics { contentDescription = "Profile" },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.AccountCircle,
+                contentDescription = null,
+                tint = ColorPrimary
+            )
+        }
 
         Spacer(Modifier.width(10.dp))
 
+        // 中间搜索栏
         Row(
             modifier = Modifier
                 .weight(1f)
                 .height(38.dp)
                 .clip(RoundedCornerShape(19.dp))
-                .background(Color(0xFFF3F4F6))
+                .background(ColorSearchBg)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
+                    indication = noRipple,
                     role = Role.Button,
                     onClick = onSearchClick
                 )
@@ -82,14 +117,16 @@ fun HomeTopActionBar(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
-                contentDescription = "Search",
-                tint = Color(0xFF9AA0A6)
+                contentDescription = null,
+                tint = ColorTextHint
             )
             Spacer(Modifier.width(8.dp))
             Text(
                 text = searchHint,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF9AA0A6),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = ColorTextHint,
+                    fontWeight = FontWeight.Normal
+                ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -97,32 +134,40 @@ fun HomeTopActionBar(
 
         Spacer(Modifier.width(10.dp))
 
+        // 消息按钮 + 角标
         Box {
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Messages",
+            Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
+                    .background(ColorIconBg)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
+                        indication = ripple(bounded = true, radius = 22.dp, color = Color(0x332563EB)),
                         role = Role.Button,
                         onClick = onMessageClick
                     )
-                    .padding(6.dp)
-            )
+                    .clearAndSetSemantics { contentDescription = "Messages" },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = null,
+                    tint = ColorTextPrimary
+                )
+            }
 
-            unreadCount?.let {
+            unreadCount?.takeIf { it > 0 }?.let {
+                val badgeText = if (it > 99) "99+" else it.toString()
                 Badge(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = 2.dp, y = (-2).dp),
-                    containerColor = Color(0xFFE53935),
+                        .offset(x = 4.dp, y = (-4).dp),
+                    containerColor = ColorBadge,
                     contentColor = Color.White
                 ) {
                     Text(
-                        text = it.toString(),
+                        text = badgeText,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -131,19 +176,26 @@ fun HomeTopActionBar(
 
         Spacer(Modifier.width(8.dp))
 
-        Icon(
-            imageVector = Icons.Outlined.Add,
-            contentDescription = "Quick actions",
+        // 右侧快捷入口
+        Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(36.dp)
                 .clip(CircleShape)
+                .background(ColorIconBg)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
+                    indication = ripple(bounded = true, radius = 22.dp, color = Color(0x332563EB)),
                     role = Role.Button,
                     onClick = onQuickActionClick
                 )
-                .padding(6.dp)
-        )
+                .clearAndSetSemantics { contentDescription = "Quick actions" },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = null,
+                tint = ColorTextPrimary
+            )
+        }
     }
 }

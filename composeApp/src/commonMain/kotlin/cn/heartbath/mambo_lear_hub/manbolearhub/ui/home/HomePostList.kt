@@ -3,22 +3,25 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
@@ -40,23 +44,29 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.svg.SvgDecoder
 
-private val ColorBg = Color(0xFFF5F6F7)
+private val ColorPageBg = Color(0xFFF8FAFC)
 private val ColorCard = Color.White
-private val ColorTitle = Color(0xFF1F2329)
-private val ColorSummary = Color(0xFF4E5969)
-private val ColorMeta = Color(0xFF86909C)
-private val ColorPlaceholder = Color(0xFFDFE1E6)
+private val ColorTitle = Color(0xFF111827)
+private val ColorSummary = Color(0xFF4B5563)
+private val ColorMeta = Color(0xFF6B7280)
+private val ColorPlaceholder = Color(0xFFE5E7EB)
+private val ColorPrimary = Color(0xFF2563EB)
 
 @Composable
 internal fun HomePostList(postList: List<HomeUIModel.PostItem>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(ColorBg),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(ColorPageBg),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        items(postList) { item ->
+        items(
+            items = postList,
+            key = { item ->
+                "${item.title.orEmpty()}_${item.username.orEmpty()}_${item.postTime.orEmpty()}"
+            }
+        ) { item ->
             PostItemCard(item)
         }
     }
@@ -78,20 +88,19 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp)
             .semantics(mergeDescendants = true) {},
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = ColorCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 val avatarUrl = item.avatarUrl.orEmpty()
                 if (avatarUrl.isNotBlank()) {
@@ -100,7 +109,7 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
                         imageLoader = imageLoader,
                         contentDescription = "${username}头像",
                         modifier = Modifier
-                            .size(34.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(ColorPlaceholder),
                         contentScale = ContentScale.Crop
@@ -108,7 +117,7 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
                 } else {
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(ColorPlaceholder)
                     )
@@ -116,7 +125,7 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
 
                 Column(
                     modifier = Modifier
-                        .padding(start = 8.dp)
+                        .padding(start = 10.dp)
                         .weight(1f)
                 ) {
                     Text(
@@ -131,7 +140,25 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
                     )
                     Text(
                         text = postTime,
-                        style = TextStyle(fontSize = 12.sp, color = ColorMeta),
+                        style = TextStyle(fontSize = 11.sp, color = ColorMeta),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0xFFEFF6FF))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = forumName,
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            color = ColorPrimary,
+                            fontWeight = FontWeight.Medium
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -141,7 +168,7 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
             if (!item.title.isNullOrBlank()) {
                 Text(
                     text = item.title,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 10.dp),
                     style = TextStyle(
                         fontSize = 16.sp,
                         lineHeight = 22.sp,
@@ -167,59 +194,106 @@ private fun PostItemCard(item: HomeUIModel.PostItem) {
                 )
             }
 
-            if (item.imageList.isNotEmpty()) {
-                if (item.imageList.size == 1) {
-                    AsyncImage(
-                        model = item.imageList.first(),
-                        contentDescription = "图片",
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(ColorPlaceholder),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    FlowRow(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        item.imageList.take(9).forEach { imageUrl ->
-                            AsyncImage(
-                                model = imageUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .width(104.dp)
-                                    .height(78.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(ColorPlaceholder),
-                                contentScale = ContentScale.Crop
-                            )
+            val images = item.imageList.take(9)
+            if (images.isNotEmpty()) {
+                when (images.size) {
+                    1 -> {
+                        AsyncImage(
+                            model = images.first(),
+                            contentDescription = "帖子图片",
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .fillMaxWidth()
+                                .height(190.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(ColorPlaceholder),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    2 -> {
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            val spacing = 8.dp
+                            val itemSize = (maxWidth - spacing) / 2
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(spacing)
+                            ) {
+                                images.forEach { imageUrl ->
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .width(itemSize)
+                                            .height(itemSize * 0.72f)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(ColorPlaceholder),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .padding(top = 10.dp)
+                                .fillMaxWidth()
+                        ) {
+                            val spacing = 8.dp
+                            val columns = 3
+                            val itemSize: Dp =
+                                (maxWidth - spacing * (columns - 1)) / columns
+
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(spacing),
+                                verticalArrangement = Arrangement.spacedBy(spacing)
+                            ) {
+                                images.forEach { imageUrl ->
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .width(itemSize)
+                                            .height(itemSize)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(ColorPlaceholder),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
 
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 10.dp),
+                color = Color(0xFFF1F5F9),
+                thickness = 1.dp
+            )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "阅读 ${item.readCount ?: 0}  回复 ${item.replyCount ?: 0}",
+                    text = "阅读 ${item.readCount ?: 0}",
                     style = TextStyle(fontSize = 12.sp, color = ColorMeta)
                 )
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = forumName,
-                    style = TextStyle(fontSize = 12.sp, color = ColorMeta),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    text = "回复 ${item.replyCount ?: 0}",
+                    style = TextStyle(fontSize = 12.sp, color = ColorMeta)
                 )
             }
         }

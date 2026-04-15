@@ -38,7 +38,7 @@ val appModule = module {
         HomeStoreProvider.create(repository = get())
     }
 
-    factory {
+    single {
         HomeViewModel(store = get())
     }
 }
