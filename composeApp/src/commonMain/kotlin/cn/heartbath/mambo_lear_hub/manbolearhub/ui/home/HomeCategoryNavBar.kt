@@ -1,41 +1,29 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import androidx.compose.ui.graphics.Color
 
-private val ColorCard = Color.White
-private val ColorChipBg = Color(0xFFF8FAFC)
-private val ColorSelectedBg = Color(0xFFEFF6FF)
-private val ColorSelectedText = Color(0xFF2563EB)
-private val ColorNormalText = Color(0xFF6B7280)
+private val SelectedBg = Color(0xFFEFF6FF)
+private val SelectedText = Color(0xFF2563EB)
+private val NormalText = Color(0xFF6B7280)
 
 @Composable
 internal fun HomeCategoryNavBar(
@@ -43,59 +31,39 @@ internal fun HomeCategoryNavBar(
     selectedCategory: Int,
     onSelectedCategory: (Int) -> Unit
 ) {
-    val scrollState = rememberScrollState()
-
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = Color(0x22000000),
-                spotColor = Color(0x18000000)
-            )
-            .clip(RoundedCornerShape(16.dp))
-            .background(ColorCard)
-            .horizontalScroll(scrollState)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .horizontalScroll(rememberScrollState())
+            .selectableGroup(), // 关键：声明单选组
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        categories.forEachIndexed { position, item ->
-            val selected = position == selectedCategory
+        categories.forEachIndexed { index, item ->
+            val selected = index == selectedCategory
 
-            Box(
+            Row(
                 modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(if (selected) ColorSelectedBg else ColorChipBg)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(
-                            bounded = true,
-                            color = Color(0x332563EB)
-                        ),
-                        onClick = { onSelectedCategory(position) }
+                    .height(30.dp)
+                    .background(
+                        color = if (selected) SelectedBg else Color.Transparent,
+                        shape = RoundedCornerShape(999.dp)
                     )
-                    .semantics {
-                        this.selected = selected
-                        role = Role.RadioButton
-                    }
-                    .wrapContentWidth()
-                    .height(34.dp)
-                    .padding(horizontal = 14.dp),
-                contentAlignment = Alignment.Center
+                    .selectable( // 关键：让系统读“已选中”，避免手写冗余状态
+                        selected = selected,
+                        onClick = { onSelectedCategory(index) },
+                        role = Role.Tab
+                    )
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = item.name,
-                    fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-                    color = if (selected) ColorSelectedText else ColorNormalText,
-                    maxLines = 1
+                    fontSize = 13.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (selected) SelectedText else NormalText
                 )
             }
         }
-
-        Spacer(modifier = Modifier.padding(end = 2.dp))
     }
 }
