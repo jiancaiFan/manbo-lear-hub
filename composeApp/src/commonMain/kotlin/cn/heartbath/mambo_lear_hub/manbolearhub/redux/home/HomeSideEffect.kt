@@ -53,7 +53,7 @@ object HomeSideEffect {
                         if (!path.isNullOrBlank()) {
                             store.dispatch(HomeAction.HomeCategoryLoading)
                             scope.launch {
-                                runCatching { repository.fetchCategoryData(path) }
+                                runCatching { repository.fetchCategoryDetail(path) }
                                     .onSuccess { data ->
                                         store.dispatch(HomeAction.HomeCategoryLoad(p, data))
                                     }
@@ -71,7 +71,7 @@ object HomeSideEffect {
                         if (!path.isNullOrBlank()) {
                             store.dispatch(HomeAction.HomeForumLoading)
                             scope.launch {
-                                runCatching { repository.fetchForumData("forum.php?forumlist=1&mobile=no") }
+                                runCatching { repository.fetchForumList("forum.php?forumlist=1&mobile=no") }
                                     .onSuccess { data ->
                                         store.dispatch(HomeAction.HomeForumLoad(p, data))
                                     }

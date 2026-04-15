@@ -62,6 +62,7 @@ internal fun HomeForumList(
     forumCategories: List<HomeUIModel.ForumCategory>,
     selectedForumCategory: Int,
     onSelectedForumCategory: (Int) -> Unit,
+    navigateToForumDetail: (Int) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -119,7 +120,6 @@ internal fun HomeForumList(
             }
         }
 
-        // 右侧版块列表（卡片更大）
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -135,7 +135,7 @@ internal fun HomeForumList(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { },
+                        .clickable { navigateToForumDetail(forum.forumId.toIntOrNull() ?: 0) },
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = CardBg),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),

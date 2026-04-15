@@ -18,7 +18,8 @@ import org.koin.compose.koinInject
 
 @Composable
 internal fun MainScreen(
-    viewModel: ManBoLearHubViewModel = koinInject()
+    viewModel: ManBoLearHubViewModel = koinInject(),
+    navigateToForumDetail: (Int) -> Unit,
 ) {
     val selectedTab by viewModel.selectedTab.collectAsState()
 
@@ -34,7 +35,8 @@ internal fun MainScreen(
     ) { innerPadding ->
         when (selectedTab) {
             ManBoMainTabType.HOME -> HomeScreen(
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                navigateToForumDetail = navigateToForumDetail
             )
 
             ManBoMainTabType.CIRCLE -> CircleScreen()

@@ -6,6 +6,6 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.CategoryI
 
 interface HomeRepository {
     suspend fun fetchCategories(): List<CategoryItem>
-    suspend fun fetchCategoryData(path: String): List<PostItem>
-    suspend fun fetchForumData(path: String): List<ForumCategory>
+    suspend fun fetchCategoryDetail(path: String): List<PostItem>
+    suspend fun fetchForumList(path: String): List<ForumCategory>
 }

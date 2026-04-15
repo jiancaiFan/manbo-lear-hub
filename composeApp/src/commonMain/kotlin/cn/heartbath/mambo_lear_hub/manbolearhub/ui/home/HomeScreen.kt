@@ -17,7 +17,8 @@ import org.koin.compose.koinInject
 @Composable
 internal fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = koinInject()
+    viewModel: HomeViewModel = koinInject(),
+    navigateToForumDetail: (Int) -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsState()
     val homeUiModel = homeState.uiModel
@@ -82,6 +83,7 @@ internal fun HomeScreen(
                         forumCategories = homeUiModel.forumCategories,
                         selectedForumCategory = selectedForumCategory,
                         onSelectedForumCategory = viewModel::onForumCategorySelected,
+                        navigateToForumDetail = navigateToForumDetail,
                         isLoading = homeState.isLoading,
                         errorMessage = homeState.errorMessage.takeIf { homeState.isError }
                     )

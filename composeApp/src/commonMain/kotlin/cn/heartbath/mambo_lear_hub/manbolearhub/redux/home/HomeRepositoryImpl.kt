@@ -45,7 +45,7 @@ class HomeRepositoryImpl(
             .filter { it.name !in excludedNames }
     }
 
-    override suspend fun fetchCategoryData(path: String): List<PostItem> {
+    override suspend fun fetchCategoryDetail(path: String): List<PostItem> {
         val html = networkClient.get(path)
         val doc = Ksoup.parse(html)
 
@@ -88,7 +88,7 @@ class HomeRepositoryImpl(
         }
     }
 
-    override suspend fun fetchForumData(path: String): List<ForumCategory> {
+    override suspend fun fetchForumList(path: String): List<ForumCategory> {
         val html = networkClient.get(path)
         val doc = Ksoup.parse(html)
 

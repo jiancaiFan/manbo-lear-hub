@@ -6,10 +6,45 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import cn.heartbath.mambo_lear_hub.manbolearhub.ui.forumdetail.ForumDetailScreen
+import cn.heartbath.mambo_lear_hub.manbolearhub.ui.main.MainScreen
+import kotlinx.serialization.Serializable
 
 @Composable
 internal fun ManBoLearHubNavGraph() {
+    val navController = rememberNavController()
 
+    NavHost(
+        navController = navController,
+        startDestination = AppRoute.Main
+    ) {
+        composable<AppRoute.Main> {
+            MainScreen(
+                navigateToForumDetail = { id -> navController.navigate(AppRoute.ForumDetail(id)) }
+            )
+        }
+
+        composable<AppRoute.ForumDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<AppRoute.ForumDetail>()
+            ForumDetailScreen(
+                forumId = route.id,
+                onBackToHome = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+@Serializable
+sealed interface AppRoute {
+    @Serializable
+    data object Main : AppRoute
+
+    @Serializable
+    data class ForumDetail(val id: Int) : AppRoute
 }
 
 enum class ManBoMainTabType(title: String) {

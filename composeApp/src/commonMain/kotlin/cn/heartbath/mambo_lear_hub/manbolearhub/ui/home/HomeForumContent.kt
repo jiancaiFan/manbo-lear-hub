@@ -12,6 +12,7 @@ fun HomeForumContent(
     forumCategories: List<HomeUIModel.ForumCategory>,
     selectedForumCategory: Int,
     onSelectedForumCategory: (Int) -> Unit,
+    navigateToForumDetail: (Int) -> Unit,
     isLoading: Boolean,
     errorMessage: String?
 ) {
@@ -19,7 +20,8 @@ fun HomeForumContent(
         HomeForumList(
             forumCategories = forumCategories,
             selectedForumCategory = selectedForumCategory,
-            onSelectedForumCategory = onSelectedForumCategory
+            onSelectedForumCategory = onSelectedForumCategory,
+            navigateToForumDetail = navigateToForumDetail
         )
         return
     }
