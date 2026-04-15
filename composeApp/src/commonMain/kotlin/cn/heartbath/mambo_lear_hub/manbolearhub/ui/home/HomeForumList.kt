@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,11 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,15 +45,18 @@ internal fun HomeForumList(
     onSelectedForumCategory: (Int) -> Unit,
 ) {
 
-    val borderColor = Color(0xFFDBEAFE) // blue-100
-    val shadowColor = Color(0x143B82F6) // 蓝色系微弱投影
+    val borderColor = Color(0xFFDBEAFE)
+    val shadowColor = Color(0x143B82F6)
 
-    Row(modifier = Modifier.fillMaxSize().padding(end = 16.dp)) {
+    Row(
+        modifier = Modifier.fillMaxSize().background(Color(0xFFF9FAFB))
+    ) {
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
+                .weight(0.3f)
                 .fillMaxHeight()
-                .background(Color.White),
+                .background(Color.White)
+                .border(1.dp, borderColor),
         ) {
             itemsIndexed(forumCategories) { index, category ->
 
@@ -57,32 +64,35 @@ internal fun HomeForumList(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .wrapContentHeight()
                         .clickable { onSelectedForumCategory(index) }
-                        .background(if (isSelected) Color(0xFFF5F5F5) else Color.White),
+                        .then(
+                            if (isSelected) Modifier.background(Color(0xFFEFF6FF))
+                            else Modifier
+                        ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(4.dp, 40.dp)
-                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .background(if (isSelected) Color(0xFF2563EB) else Color.Transparent)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = category.categoryName,
                         fontSize = 12.sp,
-                        color = if (isSelected) Color(0xFF333333) else Color(0xFF666666),
+                        color = if (isSelected) Color(0xFF2563EB) else Color(0xFF9CA3AF),
                         fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
-
         LazyColumn(
             modifier = Modifier
-                .weight(3f)
+                .weight(1f)
                 .fillMaxHeight(),
+            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             forumCategories.getOrNull(selectedForumCategory)?.forumList?.let {
@@ -90,17 +100,18 @@ internal fun HomeForumList(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentHeight()
                             .clickable { }
                             .shadow(
-                                elevation = 8.dp,
+                                elevation = 16.dp,
                                 shape = RoundedCornerShape(16.dp),
-                                clip = false,
+                                clip = true,
                                 ambientColor = shadowColor,
                                 spotColor = shadowColor
                             )
                             .background(Color.White, RoundedCornerShape(16.dp))
                             .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                            .padding(8.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -114,7 +125,7 @@ internal fun HomeForumList(
                         )
                         Column(
                             modifier = Modifier
-                                .weight(2f)
+                                .weight(1f)
                                 .fillMaxHeight()
                                 .background(Color.White),
                             verticalArrangement = Arrangement.Center,
@@ -124,7 +135,7 @@ internal fun HomeForumList(
                                 text = forumItem.forumName,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF2563EB)
+                                color = Color.Black
                             )
                             Row(
                                 modifier = Modifier
@@ -154,6 +165,13 @@ internal fun HomeForumList(
                                 color = Color.DarkGray,
                             )
                         }
+
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color(0xFFD1D5DB)
+                        )
                     }
                 }
             }
