@@ -1,7 +1,6 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -44,45 +45,51 @@ internal fun HomeForumList(
     selectedForumCategory: Int,
     onSelectedForumCategory: (Int) -> Unit,
 ) {
-
-    val borderColor = Color(0xFFDBEAFE)
-    val shadowColor = Color(0x143B82F6)
-
     Row(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFF9FAFB))
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
     ) {
         LazyColumn(
             modifier = Modifier
-                .weight(0.3f)
+                .weight(0.28f)
                 .fillMaxHeight()
-                .background(Color.White)
-                .border(1.dp, borderColor),
+                .drawBehind {
+                    drawLine(
+                        color = Color(0xFFE5E7EB),
+                        start = Offset(size.width, 0f),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
         ) {
-            itemsIndexed(forumCategories) { index, category ->
-
-                val isSelected = selectedForumCategory == index
+            itemsIndexed(
+                items = forumCategories,
+                key = { index, category -> "${category.categoryName}_$index" }
+            ) { index, category ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clickable { onSelectedForumCategory(index) }
-                        .then(
-                            if (isSelected) Modifier.background(Color(0xFFEFF6FF))
-                            else Modifier
+                        .background(
+                            if (selectedForumCategory == index) Color(0xFFEFF6FF) else Color.Transparent
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(4.dp, 40.dp)
-                            .background(if (isSelected) Color(0xFF2563EB) else Color.Transparent)
+                            .size(width = 4.dp, height = 40.dp)
+                            .background(
+                                if (selectedForumCategory == index) Color(0xFF2563EB) else Color.Transparent
+                            )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = category.categoryName,
                         fontSize = 12.sp,
-                        color = if (isSelected) Color(0xFF2563EB) else Color(0xFF9CA3AF),
-                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+                        color = if (selectedForumCategory == index) Color(0xFF2563EB) else Color(0xFF9CA3AF),
+                        fontWeight = if (selectedForumCategory == index) FontWeight.Medium else FontWeight.Normal
                     )
                 }
             }
@@ -91,88 +98,85 @@ internal fun HomeForumList(
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight(),
-            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxHeight()
+                .background(Color(0xFFF8FAFC)), // 给卡片提供对比背景
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            forumCategories.getOrNull(selectedForumCategory)?.forumList?.let {
-                items(it) { forumItem ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .clickable { }
-                            .shadow(
-                                elevation = 16.dp,
-                                shape = RoundedCornerShape(16.dp),
-                                clip = true,
-                                ambientColor = shadowColor,
-                                spotColor = shadowColor
-                            )
-                            .background(Color.White, RoundedCornerShape(16.dp))
-                            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AsyncImage(
-                            model = forumItem.iconUrl.orEmpty(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(6.dp)),
-                            contentScale = ContentScale.Crop
+            items(
+                items = forumCategories.getOrNull(selectedForumCategory)?.forumList.orEmpty(),
+                key = { forumItem -> "${forumItem.forumName}_${forumItem.iconUrl.orEmpty()}" }
+            ) { forumItem ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clickable { }
+                        .shadow(
+                            elevation = 10.dp, // 明显悬浮
+                            shape = RoundedCornerShape(16.dp),
+                            clip = false,
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x29000000)
                         )
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .background(Color.White),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.Start
+                        .background(Color.White, RoundedCornerShape(16.dp))
+                        .padding(horizontal = 12.dp, vertical = 11.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    AsyncImage(
+                        model = forumItem.iconUrl.orEmpty(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = forumItem.forumName,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF111827)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = forumItem.forumName,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
+                                text = "主题 ${forumItem.threadCount}",
+                                fontSize = 11.sp,
+                                color = Color(0xFF6B7280)
                             )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Start,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "主题 ${forumItem.threadCount}",
-                                    fontSize = 11.sp,
-                                    color = Color.Gray,
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = "贴数 ${forumItem.postCount}",
-                                    fontSize = 11.sp,
-                                    color = Color.Gray,
-                                )
-                            }
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = forumItem.forumDescription.orEmpty(),
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.DarkGray,
+                                text = "贴数 ${forumItem.postCount}",
+                                fontSize = 11.sp,
+                                color = Color(0xFF6B7280)
                             )
                         }
 
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = Color(0xFFD1D5DB)
+                        Text(
+                            text = forumItem.forumDescription.orEmpty(),
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color(0xFF4B5563)
                         )
                     }
+
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = Color(0xFFD1D5DB)
+                    )
                 }
             }
         }
