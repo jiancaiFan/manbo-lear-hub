@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
 import androidx.compose.foundation.BorderStroke
@@ -53,7 +55,7 @@ import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
 private val PageBg = Color(0xFFF8FAFC)
 private val CardBg = Color.White
@@ -64,6 +66,8 @@ private val MetaColor = Color(0xFF6B7280)
 private val PlaceholderColor = Color(0xFFE5E7EB)
 private val PrimaryColor = Color(0xFF2563EB)
 
+private const val SCROLL_TRIGGER_PX = 24
+
 @Composable
 internal fun HomePostList(
     postList: List<HomeUIModel.PostItem>,
@@ -71,23 +75,39 @@ internal fun HomePostList(
 ) {
     val context = LocalPlatformContext.current
     val imageLoader = remember {
-        ImageLoader.Builder(context)
-            .components { add(SvgDecoder.Factory()) }
-            .build()
+        ImageLoader.Builder(context).components { add(SvgDecoder.Factory()) }.build()
     }
 
     val listState = rememberLazyListState()
     var lastIndex by remember { mutableIntStateOf(0) }
     var lastOffset by remember { mutableIntStateOf(0) }
+    var accumulatedDelta by remember { mutableIntStateOf(0) }
 
-    @Suppress("DuplicatedCode")
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .map { (i, o) ->
-                val down = i > lastIndex || (i == lastIndex && o > lastOffset)
-                lastIndex = i
-                lastOffset = o
-                down
+            .mapNotNull { (index, offset) ->
+                val delta = when {
+                    index > lastIndex -> SCROLL_TRIGGER_PX
+                    index < lastIndex -> -SCROLL_TRIGGER_PX
+                    else -> offset - lastOffset
+                }
+
+                lastIndex = index
+                lastOffset = offset
+                if (delta == 0) return@mapNotNull null
+
+                accumulatedDelta += delta
+                when {
+                    accumulatedDelta >= SCROLL_TRIGGER_PX -> {
+                        accumulatedDelta = 0
+                        true
+                    }
+                    accumulatedDelta <= -SCROLL_TRIGGER_PX -> {
+                        accumulatedDelta = 0
+                        false
+                    }
+                    else -> null
+                }
             }
             .distinctUntilChanged()
             .collectLatest(onScrollDirectionChanged)
@@ -124,9 +144,7 @@ private fun PostItemCard(
     val a11yText = buildString {
         item.title?.takeIf { it.isNotBlank() }?.let { append(it).append("。") }
         item.summary?.takeIf { it.isNotBlank() }?.let { append(it).append("。") }
-        append("作者$username。")
-        append("发布时间$postTime。")
-        append("阅读${item.readCount ?: 0}，回复${item.replyCount ?: 0}。")
+        append("作者$username。发布时��$postTime。阅读${item.readCount ?: 0}，回复${item.replyCount ?: 0}。")
     }
 
     Card(
@@ -175,7 +193,11 @@ private fun PostItemCard(
                 ) {
                     Text(
                         text = username,
-                        style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TitleColor),
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TitleColor
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -195,7 +217,11 @@ private fun PostItemCard(
                 ) {
                     Text(
                         text = forumName,
-                        style = TextStyle(fontSize = 10.sp, color = PrimaryColor, fontWeight = FontWeight.Medium),
+                        style = TextStyle(
+                            fontSize = 10.sp,
+                            color = PrimaryColor,
+                            fontWeight = FontWeight.Medium
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -221,15 +247,19 @@ private fun PostItemCard(
                 Text(
                     text = item.summary,
                     modifier = Modifier.padding(top = 4.dp),
-                    style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, color = SummaryColor),
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        color = SummaryColor
+                    ),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            if (images.isNotEmpty()) {
-                when (images.size) {
-                    1 -> AsyncImage(
+            when (images.size) {
+                1 -> {
+                    AsyncImage(
                         model = ImageRequest.Builder(context).data(images.first()).crossfade(false).build(),
                         imageLoader = imageLoader,
                         contentDescription = "帖子配图",
@@ -241,8 +271,10 @@ private fun PostItemCard(
                             .background(PlaceholderColor),
                         contentScale = ContentScale.Crop
                     )
+                }
 
-                    2 -> BoxWithConstraints(
+                2 -> {
+                    BoxWithConstraints(
                         modifier = Modifier
                             .padding(top = 7.dp)
                             .fillMaxWidth()
@@ -268,8 +300,10 @@ private fun PostItemCard(
                             }
                         }
                     }
+                }
 
-                    else -> BoxWithConstraints(
+                in 3..9 -> {
+                    BoxWithConstraints(
                         modifier = Modifier
                             .padding(top = 7.dp)
                             .fillMaxWidth()
@@ -310,9 +344,15 @@ private fun PostItemCard(
                     .padding(top = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "阅读 ${item.readCount ?: 0}", style = TextStyle(fontSize = 10.sp, color = MetaColor))
+                Text(
+                    text = "阅读 ${item.readCount ?: 0}",
+                    style = TextStyle(fontSize = 10.sp, color = MetaColor)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text(text = "回复 ${item.replyCount ?: 0}", style = TextStyle(fontSize = 10.sp, color = MetaColor))
+                Text(
+                    text = "回复 ${item.replyCount ?: 0}",
+                    style = TextStyle(fontSize = 10.sp, color = MetaColor)
+                )
             }
         }
     }

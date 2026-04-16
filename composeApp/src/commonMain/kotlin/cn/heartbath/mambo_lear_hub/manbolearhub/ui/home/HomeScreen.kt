@@ -1,5 +1,10 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -8,7 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.launch
@@ -33,6 +41,9 @@ internal fun HomeScreen(
     )
     val scope = rememberCoroutineScope()
 
+    // 新增：顶部分类栏折叠状态
+    var collapseTopCategoryBar by remember { mutableStateOf(false) }
+
     LaunchedEffect(selectedCategory, categories.size) {
         if (categories.isEmpty()) return@LaunchedEffect
         val safeIndex = selectedCategory.coerceIn(0, categories.lastIndex)
@@ -56,20 +67,33 @@ internal fun HomeScreen(
             onQuickActionClick = {}
         )
 
-        HomeCategoryNavBar(
-            categories = categories,
-            selectedCategory = pagerState.currentPage,
-            onSelectedCategory = { index ->
-                if (index !in categories.indices || index == pagerState.currentPage) return@HomeCategoryNavBar
-                scope.launch { pagerState.animateScrollToPage(index) }
-            }
-        )
+        AnimatedVisibility(
+            visible = !collapseTopCategoryBar,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            HomeCategoryNavBar(
+                categories = categories,
+                selectedCategory = pagerState.currentPage,
+                onSelectedCategory = { index ->
+                    if (index !in categories.indices || index == pagerState.currentPage) return@HomeCategoryNavBar
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                }
+            )
+        }
 
         if (categories.isNotEmpty()) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
+                val onListScroll: (Boolean) -> Unit = { scrollingDown ->
+                    // 上滑(内容向上) => 折叠顶部分类栏
+                    collapseTopCategoryBar = scrollingDown
+                    // 同时保留你原来的底栏联动
+                    onScrollDirectionChanged(scrollingDown)
+                }
+
                 if (page == categories.lastIndex) {
                     HomeForumContent(
                         forumCategories = homeUiModel.forumCategories,
@@ -78,14 +102,14 @@ internal fun HomeScreen(
                         navigateToForumDetail = navigateToForumDetail,
                         isLoading = homeState.isLoading,
                         errorMessage = homeState.errorMessage.takeIf { homeState.isError },
-                        onScrollDirectionChanged = onScrollDirectionChanged
+                        onScrollDirectionChanged = onListScroll
                     )
                 } else {
                     HomeCategoryContent(
                         data = homeUiModel.categoryDataMap[page].orEmpty(),
                         isLoading = homeState.isLoading,
                         errorMessage = homeState.errorMessage.takeIf { homeState.isError },
-                        onScrollDirectionChanged = onScrollDirectionChanged
+                        onScrollDirectionChanged = onListScroll
                     )
                 }
             }
@@ -94,7 +118,10 @@ internal fun HomeScreen(
                 data = emptyList(),
                 isLoading = homeState.isLoading,
                 errorMessage = homeState.errorMessage.takeIf { homeState.isError },
-                onScrollDirectionChanged = onScrollDirectionChanged
+                onScrollDirectionChanged = { scrollingDown ->
+                    collapseTopCategoryBar = scrollingDown
+                    onScrollDirectionChanged(scrollingDown)
+                }
             )
         }
     }

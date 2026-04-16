@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
 import androidx.compose.foundation.BorderStroke
@@ -53,7 +55,7 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
 private val PageBg = Color(0xFFF8FAFC)
 private val CardBg = Color.White
@@ -67,6 +69,8 @@ private val LeftSelectedText = Color(0xFF2563EB)
 private val LeftSelectedBg = Color(0xFFEFF6FF)
 private val LeftIndicator = Color(0xFF2563EB)
 
+private const val SCROLL_TRIGGER_PX = 24
+
 @Composable
 internal fun HomeForumList(
     forumCategories: List<HomeUIModel.ForumCategory>,
@@ -78,15 +82,33 @@ internal fun HomeForumList(
     val rightListState = rememberLazyListState()
     var lastIndex by remember { mutableIntStateOf(0) }
     var lastOffset by remember { mutableIntStateOf(0) }
+    var accumulatedDelta by remember { mutableIntStateOf(0) }
 
-    @Suppress("DuplicatedCode")
     LaunchedEffect(rightListState, selectedForumCategory) {
         snapshotFlow { rightListState.firstVisibleItemIndex to rightListState.firstVisibleItemScrollOffset }
-            .map { (i, o) ->
-                val down = i > lastIndex || (i == lastIndex && o > lastOffset)
-                lastIndex = i
-                lastOffset = o
-                down
+            .mapNotNull { (index, offset) ->
+                val delta = when {
+                    index > lastIndex -> SCROLL_TRIGGER_PX
+                    index < lastIndex -> -SCROLL_TRIGGER_PX
+                    else -> offset - lastOffset
+                }
+
+                lastIndex = index
+                lastOffset = offset
+                if (delta == 0) return@mapNotNull null
+
+                accumulatedDelta += delta
+                when {
+                    accumulatedDelta >= SCROLL_TRIGGER_PX -> {
+                        accumulatedDelta = 0
+                        true
+                    }
+                    accumulatedDelta <= -SCROLL_TRIGGER_PX -> {
+                        accumulatedDelta = 0
+                        false
+                    }
+                    else -> null
+                }
             }
             .distinctUntilChanged()
             .collectLatest(onScrollDirectionChanged)
@@ -95,7 +117,7 @@ internal fun HomeForumList(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
     ) {
         LazyColumn(
             modifier = Modifier
