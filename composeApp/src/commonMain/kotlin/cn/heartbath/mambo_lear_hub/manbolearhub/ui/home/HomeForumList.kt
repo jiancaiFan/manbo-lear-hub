@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +31,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 private val PageBg = Color(0xFFF8FAFC)
 private val CardBg = Color.White
@@ -63,13 +73,30 @@ internal fun HomeForumList(
     selectedForumCategory: Int,
     onSelectedForumCategory: (Int) -> Unit,
     navigateToForumDetail: (Int) -> Unit,
+    onScrollDirectionChanged: (Boolean) -> Unit = {},
 ) {
+    val rightListState = rememberLazyListState()
+    var lastIndex by remember { mutableIntStateOf(0) }
+    var lastOffset by remember { mutableIntStateOf(0) }
+
+    @Suppress("DuplicatedCode")
+    LaunchedEffect(rightListState, selectedForumCategory) {
+        snapshotFlow { rightListState.firstVisibleItemIndex to rightListState.firstVisibleItemScrollOffset }
+            .map { (i, o) ->
+                val down = i > lastIndex || (i == lastIndex && o > lastOffset)
+                lastIndex = i
+                lastOffset = o
+                down
+            }
+            .distinctUntilChanged()
+            .collectLatest(onScrollDirectionChanged)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
-        // 左侧分类（无障碍：单选组 + selectable）
         LazyColumn(
             modifier = Modifier
                 .weight(0.30f)
@@ -121,6 +148,7 @@ internal fun HomeForumList(
         }
 
         LazyColumn(
+            state = rightListState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()

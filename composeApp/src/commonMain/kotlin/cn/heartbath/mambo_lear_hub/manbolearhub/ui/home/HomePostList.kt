@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -25,7 +26,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +51,9 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 private val PageBg = Color(0xFFF8FAFC)
 private val CardBg = Color.White
@@ -56,7 +65,10 @@ private val PlaceholderColor = Color(0xFFE5E7EB)
 private val PrimaryColor = Color(0xFF2563EB)
 
 @Composable
-internal fun HomePostList(postList: List<HomeUIModel.PostItem>) {
+internal fun HomePostList(
+    postList: List<HomeUIModel.PostItem>,
+    onScrollDirectionChanged: (Boolean) -> Unit = {}
+) {
     val context = LocalPlatformContext.current
     val imageLoader = remember {
         ImageLoader.Builder(context)
@@ -64,7 +76,25 @@ internal fun HomePostList(postList: List<HomeUIModel.PostItem>) {
             .build()
     }
 
+    val listState = rememberLazyListState()
+    var lastIndex by remember { mutableIntStateOf(0) }
+    var lastOffset by remember { mutableIntStateOf(0) }
+
+    @Suppress("DuplicatedCode")
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .map { (i, o) ->
+                val down = i > lastIndex || (i == lastIndex && o > lastOffset)
+                lastIndex = i
+                lastOffset = o
+                down
+            }
+            .distinctUntilChanged()
+            .collectLatest(onScrollDirectionChanged)
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .background(PageBg),
@@ -92,14 +122,8 @@ private fun PostItemCard(
     val images = item.imageList.take(9)
 
     val a11yText = buildString {
-        item.title?.takeIf { it.isNotBlank() }?.let {
-            append(it)
-            append("。")
-        }
-        item.summary?.takeIf { it.isNotBlank() }?.let {
-            append(it)
-            append("。")
-        }
+        item.title?.takeIf { it.isNotBlank() }?.let { append(it).append("。") }
+        item.summary?.takeIf { it.isNotBlank() }?.let { append(it).append("。") }
         append("作者$username。")
         append("发布时间$postTime。")
         append("阅读${item.readCount ?: 0}，回复${item.replyCount ?: 0}。")
@@ -108,9 +132,7 @@ private fun PostItemCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .semantics(mergeDescendants = true) {
-                contentDescription = a11yText
-            },
+            .semantics(mergeDescendants = true) { contentDescription = a11yText },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -153,11 +175,7 @@ private fun PostItemCard(
                 ) {
                     Text(
                         text = username,
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = TitleColor
-                        ),
+                        style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TitleColor),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -177,11 +195,7 @@ private fun PostItemCard(
                 ) {
                     Text(
                         text = forumName,
-                        style = TextStyle(
-                            fontSize = 10.sp,
-                            color = PrimaryColor,
-                            fontWeight = FontWeight.Medium
-                        ),
+                        style = TextStyle(fontSize = 10.sp, color = PrimaryColor, fontWeight = FontWeight.Medium),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -207,11 +221,7 @@ private fun PostItemCard(
                 Text(
                     text = item.summary,
                     modifier = Modifier.padding(top = 4.dp),
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        color = SummaryColor
-                    ),
+                    style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, color = SummaryColor),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -219,77 +229,69 @@ private fun PostItemCard(
 
             if (images.isNotEmpty()) {
                 when (images.size) {
-                    1 -> {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context).data(images.first()).crossfade(false).build(),
-                            imageLoader = imageLoader,
-                            contentDescription = "帖子配图",
-                            modifier = Modifier
-                                .padding(top = 7.dp)
-                                .fillMaxWidth()
-                                .height(150.dp)
-                                .clip(RoundedCornerShape(9.dp))
-                                .background(PlaceholderColor),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                    1 -> AsyncImage(
+                        model = ImageRequest.Builder(context).data(images.first()).crossfade(false).build(),
+                        imageLoader = imageLoader,
+                        contentDescription = "帖子配图",
+                        modifier = Modifier
+                            .padding(top = 7.dp)
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(9.dp))
+                            .background(PlaceholderColor),
+                        contentScale = ContentScale.Crop
+                    )
 
-                    2 -> {
-                        BoxWithConstraints(
-                            modifier = Modifier
-                                .padding(top = 7.dp)
-                                .fillMaxWidth()
+                    2 -> BoxWithConstraints(
+                        modifier = Modifier
+                            .padding(top = 7.dp)
+                            .fillMaxWidth()
+                    ) {
+                        val spacing = 6.dp
+                        val itemWidth = (maxWidth - spacing) / 2
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing)
                         ) {
-                            val spacing = 6.dp
-                            val itemWidth = (maxWidth - spacing) / 2
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(spacing)
-                            ) {
-                                images.forEach { url ->
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(context).data(url).crossfade(false).build(),
-                                        imageLoader = imageLoader,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .width(itemWidth)
-                                            .height(itemWidth * 0.72f)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(PlaceholderColor),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
+                            images.forEach { url ->
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(url).crossfade(false).build(),
+                                    imageLoader = imageLoader,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .width(itemWidth)
+                                        .height(itemWidth * 0.72f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(PlaceholderColor),
+                                    contentScale = ContentScale.Crop
+                                )
                             }
                         }
                     }
 
-                    else -> {
-                        BoxWithConstraints(
-                            modifier = Modifier
-                                .padding(top = 7.dp)
-                                .fillMaxWidth()
+                    else -> BoxWithConstraints(
+                        modifier = Modifier
+                            .padding(top = 7.dp)
+                            .fillMaxWidth()
+                    ) {
+                        val spacing = 6.dp
+                        val itemSize = (maxWidth - spacing * 2) / 3
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(spacing),
+                            verticalArrangement = Arrangement.spacedBy(spacing)
                         ) {
-                            val spacing = 6.dp
-                            val itemSize = (maxWidth - spacing * 2) / 3
-
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(spacing),
-                                verticalArrangement = Arrangement.spacedBy(spacing)
-                            ) {
-                                images.forEach { url ->
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(context).data(url).crossfade(false).build(),
-                                        imageLoader = imageLoader,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(itemSize)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(PlaceholderColor),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
+                            images.forEach { url ->
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context).data(url).crossfade(false).build(),
+                                    imageLoader = imageLoader,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(itemSize)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(PlaceholderColor),
+                                    contentScale = ContentScale.Crop
+                                )
                             }
                         }
                     }
@@ -308,15 +310,9 @@ private fun PostItemCard(
                     .padding(top = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "阅读 ${item.readCount ?: 0}",
-                    style = TextStyle(fontSize = 10.sp, color = MetaColor)
-                )
+                Text(text = "阅读 ${item.readCount ?: 0}", style = TextStyle(fontSize = 10.sp, color = MetaColor))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "回复 ${item.replyCount ?: 0}",
-                    style = TextStyle(fontSize = 10.sp, color = MetaColor)
-                )
+                Text(text = "回复 ${item.replyCount ?: 0}", style = TextStyle(fontSize = 10.sp, color = MetaColor))
             }
         }
     }

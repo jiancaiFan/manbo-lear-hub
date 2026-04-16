@@ -13,17 +13,15 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
 internal fun HomeCategoryContent(
     data: List<PostItem>,
     isLoading: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    onScrollDirectionChanged: (Boolean) -> Unit
 ) {
     if (!isLoading && errorMessage.isNullOrBlank() && data.isNotEmpty()) {
-        HomePostList(postList = data)
+        HomePostList(postList = data, onScrollDirectionChanged = onScrollDirectionChanged)
         return
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when {
             isLoading -> CircularProgressIndicator()
             !errorMessage.isNullOrBlank() -> Text(text = errorMessage)

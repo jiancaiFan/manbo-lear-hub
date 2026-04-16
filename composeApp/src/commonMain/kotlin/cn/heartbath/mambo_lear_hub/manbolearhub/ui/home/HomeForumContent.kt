@@ -1,7 +1,9 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,22 +16,21 @@ fun HomeForumContent(
     onSelectedForumCategory: (Int) -> Unit,
     navigateToForumDetail: (Int) -> Unit,
     isLoading: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    onScrollDirectionChanged: (Boolean) -> Unit
 ) {
     if (!isLoading && errorMessage.isNullOrBlank() && forumCategories.isNotEmpty()) {
         HomeForumList(
             forumCategories = forumCategories,
             selectedForumCategory = selectedForumCategory,
             onSelectedForumCategory = onSelectedForumCategory,
-            navigateToForumDetail = navigateToForumDetail
+            navigateToForumDetail = navigateToForumDetail,
+            onScrollDirectionChanged = onScrollDirectionChanged
         )
         return
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when {
             isLoading -> CircularProgressIndicator()
             !errorMessage.isNullOrBlank() -> Text(text = errorMessage)

@@ -18,7 +18,8 @@ import org.koin.compose.koinInject
 internal fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = koinInject(),
-    navigateToForumDetail: (Int) -> Unit
+    navigateToForumDetail: (Int) -> Unit,
+    onScrollDirectionChanged: (Boolean) -> Unit = {}
 ) {
     val homeState by viewModel.homeState.collectAsState()
     val homeUiModel = homeState.uiModel
@@ -32,7 +33,6 @@ internal fun HomeScreen(
     )
     val scope = rememberCoroutineScope()
 
-    // VM 状态 -> Pager（用于状态恢复或外部修改 selectedCategory 时同步）
     LaunchedEffect(selectedCategory, categories.size) {
         if (categories.isEmpty()) return@LaunchedEffect
         val safeIndex = selectedCategory.coerceIn(0, categories.lastIndex)
@@ -41,18 +41,13 @@ internal fun HomeScreen(
         }
     }
 
-    // Pager -> VM（关键：使用 settledPage，避免动画经过中间页导致选错）
     LaunchedEffect(pagerState.settledPage, categories.size) {
         if (categories.isEmpty()) return@LaunchedEffect
         val settled = pagerState.settledPage.coerceIn(0, categories.lastIndex)
-        if (settled != selectedCategory) {
-            viewModel.onCategorySelected(settled)
-        }
+        if (settled != selectedCategory) viewModel.onCategorySelected(settled)
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
         HomeTopActionBar(
             unreadCount = 8,
             onProfileClick = {},
@@ -65,11 +60,8 @@ internal fun HomeScreen(
             categories = categories,
             selectedCategory = pagerState.currentPage,
             onSelectedCategory = { index ->
-                if (index !in categories.indices) return@HomeCategoryNavBar
-                if (index == pagerState.currentPage) return@HomeCategoryNavBar
-                scope.launch {
-                    pagerState.animateScrollToPage(index)
-                }
+                if (index !in categories.indices || index == pagerState.currentPage) return@HomeCategoryNavBar
+                scope.launch { pagerState.animateScrollToPage(index) }
             }
         )
 
@@ -85,14 +77,15 @@ internal fun HomeScreen(
                         onSelectedForumCategory = viewModel::onForumCategorySelected,
                         navigateToForumDetail = navigateToForumDetail,
                         isLoading = homeState.isLoading,
-                        errorMessage = homeState.errorMessage.takeIf { homeState.isError }
+                        errorMessage = homeState.errorMessage.takeIf { homeState.isError },
+                        onScrollDirectionChanged = onScrollDirectionChanged
                     )
                 } else {
-                    val currentCategoryPostList = homeUiModel.categoryDataMap[page].orEmpty()
                     HomeCategoryContent(
-                        data = currentCategoryPostList,
+                        data = homeUiModel.categoryDataMap[page].orEmpty(),
                         isLoading = homeState.isLoading,
-                        errorMessage = homeState.errorMessage.takeIf { homeState.isError }
+                        errorMessage = homeState.errorMessage.takeIf { homeState.isError },
+                        onScrollDirectionChanged = onScrollDirectionChanged
                     )
                 }
             }
@@ -100,7 +93,8 @@ internal fun HomeScreen(
             HomeCategoryContent(
                 data = emptyList(),
                 isLoading = homeState.isLoading,
-                errorMessage = homeState.errorMessage.takeIf { homeState.isError }
+                errorMessage = homeState.errorMessage.takeIf { homeState.isError },
+                onScrollDirectionChanged = onScrollDirectionChanged
             )
         }
     }
