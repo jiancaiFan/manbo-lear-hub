@@ -2,7 +2,16 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,10 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.ManBoMainTabType
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.TabDisplayItem
 
@@ -38,8 +49,15 @@ internal fun BottomNavigationBar(
             .padding(start = 16.dp, end = 16.dp, bottom = bottom + 6.dp)
             .shadow(12.dp, barShape)
             .clip(barShape)
-            .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFF9FBFF))))
-            .border(1.dp, Color(0xFFDDE3EC), barShape)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        CommonColors.BottomBarGradientTop,
+                        CommonColors.BottomBarGradientBottom
+                    )
+                )
+            )
+            .border(1.dp, CommonColors.BottomBarBorder, barShape)
             .padding(7.dp)
             .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -47,28 +65,43 @@ internal fun BottomNavigationBar(
     ) {
         items.forEach { item ->
             val selected = currentTab == item.tab
+            val itemColor = if (selected) {
+                CommonColors.BottomBarItemSelected
+            } else {
+                CommonColors.BottomBarItemUnselected
+            }
+
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .defaultMinSize(minHeight = 42.dp)
                     .clip(itemShape)
-                    .background(if (selected) Color(0xFFEFF4FF) else Color.Transparent)
-                    .selectable(selected = selected, onClick = { onItemClick(item) })
+                    .background(
+                        if (selected) CommonColors.BottomBarItemSelectedBg
+                        else CommonColors.BackgroundWhite.copy(alpha = 0f)
+                    )
+                    .selectable(
+                        selected = selected,
+                        onClick = { onItemClick(item) },
+                        role = Role.Tab
+                    )
                     .padding(vertical = 5.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
                     imageVector = item.icon,
-                    contentDescription = item.label,
-                    modifier = Modifier.size(18.dp),
-                    tint = if (selected) Color(0xFF2F6BFF) else Color(0xFF8B95A7)
+                    contentDescription = null, // ���免与文本重复朗读
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clearAndSetSemantics { }, // 清掉图标自身语义
+                    tint = itemColor
                 )
                 Text(
                     text = item.label,
                     fontSize = 10.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (selected) Color(0xFF2F6BFF) else Color(0xFF8B95A7),
+                    color = itemColor,
                     maxLines = 1
                 )
             }

@@ -3,11 +3,8 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.constants
 import androidx.compose.ui.graphics.Color
 
 internal object CommonColors {
-    val BrandPrimaryRed = Color(0xFFE53935)
-    val TextSecondary = Color(0xFF8A8A8A)
     val BackgroundWhite = Color(0xFFFFFFFF)
     val BorderLight = Color(0xFFEDEDED)
-    val RippleOverlay = BrandPrimaryRed.copy(alpha = 0.24f)
 
     val HomePageBg = Color(0xFFF8FAFC)
     val CardBorder = Color(0xFFEFF2F6)
@@ -27,4 +24,12 @@ internal object CommonColors {
     val LeftTextSelected = PrimaryBlue
     val LeftBgSelected = PrimaryBlueLightBg
     val LeftIndicator = PrimaryBlue
+
+    // Bottom bar
+    val BottomBarGradientTop = BackgroundWhite
+    val BottomBarGradientBottom = Color(0xFFF9FBFF)
+    val BottomBarBorder = Color(0xFFDDE3EC)
+    val BottomBarItemSelectedBg = PrimaryBlueLightBg
+    val BottomBarItemSelected = Color(0xFF2F6BFF)
+    val BottomBarItemUnselected = Color(0xFF8B95A7)
 }

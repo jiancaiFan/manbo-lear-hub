@@ -1,11 +1,12 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -16,14 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
 import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
-import androidx.compose.ui.graphics.Color
 
-private val SelectedBg = Color(0xFFEFF6FF)
-private val SelectedText = Color(0xFF2563EB)
-private val NormalText = Color(0xFF6B7280)
+private val ChipShape = RoundedCornerShape(999.dp)
 
 @Composable
 internal fun HomeCategoryNavBar(
@@ -35,7 +35,7 @@ internal fun HomeCategoryNavBar(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .horizontalScroll(rememberScrollState())
-            .selectableGroup(), // 关键：声明单选组
+            .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -44,24 +44,33 @@ internal fun HomeCategoryNavBar(
 
             Row(
                 modifier = Modifier
-                    .height(30.dp)
+                    .defaultMinSize(minHeight = 32.dp) // 替代固定高度，避免文字被挤
                     .background(
-                        color = if (selected) SelectedBg else Color.Transparent,
-                        shape = RoundedCornerShape(999.dp)
+                        color = if (selected) CommonColors.PrimaryBlueLightBg else CommonColors.BackgroundWhite,
+                        shape = ChipShape
                     )
-                    .selectable( // 关键：让系统读“已选中”，避免手写冗余状态
+                    .border(
+                        width = 1.dp,
+                        color = if (selected) CommonColors.CardBorder else CommonColors.BorderLight,
+                        shape = ChipShape
+                    )
+                    .selectable(
                         selected = selected,
                         onClick = { onSelectedCategory(index) },
                         role = Role.Tab
                     )
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 7.dp), // 稍加高，显示更完整
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = item.name,
                     fontSize = 13.sp,
+                    lineHeight = 16.sp, // 明确行高，避免不同平台字形裁切感
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) SelectedText else NormalText
+                    color = if (selected) CommonColors.PrimaryBlue else CommonColors.Meta,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Clip // 单行标签不需要省略号
                 )
             }
         }
