@@ -38,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext

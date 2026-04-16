@@ -1,8 +1,8 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.repository.home
 
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.ForumCategory
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.CategoryItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel.ForumCategory
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel.PostItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel.CategoryItem
 
 interface HomeRepository {
     suspend fun fetchCategories(): List<CategoryItem>

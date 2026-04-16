@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel
 import coil3.compose.AsyncImage
 
 private val PageBg = Color(0xFFF8FAFC)

@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel
 
 @Composable
 fun HomeForumContent(

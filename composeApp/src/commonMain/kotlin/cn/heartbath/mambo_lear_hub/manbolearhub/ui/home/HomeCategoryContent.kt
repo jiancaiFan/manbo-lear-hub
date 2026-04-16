@@ -7,7 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.HomeUIModel.PostItem
 
 @Composable
 internal fun HomeCategoryContent(
