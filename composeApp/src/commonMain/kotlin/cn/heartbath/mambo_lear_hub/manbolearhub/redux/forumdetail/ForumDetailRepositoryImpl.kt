@@ -18,11 +18,16 @@ class ForumDetailRepositoryImpl(
         fun toAbsUrl(raw: String?): String {
             val href = raw.orEmpty().trim()
             if (href.isBlank()) return ""
+
+            val base = baseUrl.trimEnd('/')
+
             return when {
                 href.startsWith("http://") || href.startsWith("https://") -> href
                 href.startsWith("//") -> "https:$href"
-                href.startsWith("/") -> baseUrl.trimEnd('/') + href
-                else -> baseUrl.trimEnd('/') + "/" + href
+                href.startsWith("/") -> base + href
+                href.startsWith("./") -> base + "/" + href.removePrefix("./")
+                href.startsWith("../") -> base + "/" + href.removePrefix("../")
+                else -> base + "/" + href
             }
         }
 
@@ -49,23 +54,41 @@ class ForumDetailRepositoryImpl(
                 ?.toIntOrNull()
         }
 
-        // forumName
         val forumName = doc.selectFirst(".forumdisplay-top h2")
             ?.ownText()
             ?.trim()
             ?.takeIf { it.isNotBlank() }
+            ?: doc.selectFirst(".header h2")
+                ?.text()
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
             ?: doc.selectFirst("title")
                 ?.text()
                 .orEmpty()
                 .substringBefore(" - ")
                 .trim()
 
-        // forumIcon
-        val forumIconUrl = toAbsUrl(
-            doc.selectFirst(".forumdisplay-top h2 img")?.attr("src")
-        ).ifBlank { null }
+        val forumIconUrl = run {
+            val raw = sequenceOf(
+                doc.selectFirst(".forumdisplay-top h2 img")?.attr("src"),
+                doc.selectFirst(".forumdisplay-top img")?.attr("src"),
+                doc.selectFirst("meta[property=og:image]")?.attr("content"),
+                doc.selectFirst("link[rel=image_src]")?.attr("href")
+            ).firstOrNull { !it.isNullOrBlank() }
 
-        // forumId: 优先 fid，其次收藏链接 id
+            val parsed = toAbsUrl(raw)
+
+            val isInvalidPlaceholder = parsed.isBlank() ||
+                    parsed.contains("noavatar", ignoreCase = true) ||
+                    (parsed.endsWith(".svg", ignoreCase = true) && parsed.contains("avatar", ignoreCase = true))
+
+            if (isInvalidPlaceholder) {
+                toAbsUrl("static/image/common/forum_default.png")
+            } else {
+                parsed
+            }
+        }.ifBlank { null }
+
         val forumId = run {
             val fidHref = doc.selectFirst("#dhnav_li a[href*=\"fid=\"]")?.attr("href").orEmpty()
             Regex("""[?&]fid=(\d+)""").find(fidHref)?.groupValues?.getOrNull(1)
@@ -75,13 +98,11 @@ class ForumDetailRepositoryImpl(
                 }
         }
 
-        // stats
         val statText = doc.selectFirst(".forumdisplay-top p")?.text().orEmpty()
         val todayPostCount = parseStat(statText, "今日:")
         val totalThreadCount = parseStat(statText, "主题:")
         val forumRank = parseStat(statText, "排名:")
 
-        // favorite
         val favoriteAction = doc.selectFirst("#a_favorite")?.let { a ->
             val actionUrl = toAbsUrl(a.attr("href"))
             if (actionUrl.isBlank()) {
@@ -100,8 +121,11 @@ class ForumDetailRepositoryImpl(
             }
         }
 
-        // tabs
-        val tabList = doc.select("#dhnav_li li a").mapNotNull { a ->
+        val tabAnchors = doc.select("#dhnav_li li a").ifEmpty {
+            doc.select(".dhnav_box a[href*=\"forumdisplay\"]")
+        }
+
+        val tabList = tabAnchors.mapNotNull { a ->
             val title = a.text().trim()
             val linkUrl = toAbsUrl(a.attr("href"))
             if (title.isBlank() || linkUrl.isBlank()) {
@@ -112,7 +136,7 @@ class ForumDetailRepositoryImpl(
                     linkUrl = linkUrl
                 )
             }
-        }
+        }.distinctBy { it.linkUrl }
 
         return ForumDetailUiModel.ForumHeader(
             forumId = forumId,
@@ -133,11 +157,16 @@ class ForumDetailRepositoryImpl(
         fun toAbsUrl(raw: String?): String {
             val href = raw.orEmpty().trim()
             if (href.isBlank()) return ""
+
+            val base = baseUrl.trimEnd('/')
+
             return when {
                 href.startsWith("http://") || href.startsWith("https://") -> href
                 href.startsWith("//") -> "https:$href"
-                href.startsWith("/") -> baseUrl.trimEnd('/') + href
-                else -> baseUrl.trimEnd('/') + "/" + href
+                href.startsWith("/") -> base + href
+                href.startsWith("./") -> base + "/" + href.removePrefix("./")
+                href.startsWith("../") -> base + "/" + href.removePrefix("../")
+                else -> base + "/" + href
             }
         }
 
@@ -165,8 +194,11 @@ class ForumDetailRepositoryImpl(
             val publishTimeText = li.selectFirst(".threadlist_top .mtime")?.text()?.trim()
                 ?.takeIf { it.isNotBlank() }
 
-            val imageUrls = li.select(".threadlist_imgs1 img")
-                .mapNotNull { toAbsUrl(it.attr("src")).ifBlank { null } }
+            val imageUrls = li.select(".threadlist_imgs1 img, .threadlist_imgs img")
+                .mapNotNull {
+                    val raw = it.attr("data-src").ifBlank { it.attr("src") }
+                    toAbsUrl(raw).ifBlank { null }
+                }
 
             val stats = li.select(".threadlist_foot li")
             val viewCount = parseInt(stats.getOrNull(0)?.text())

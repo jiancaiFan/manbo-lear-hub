@@ -31,7 +31,11 @@ object ForumDetailSideEffect {
                                         }
                                     }
                                     .onFailure { e ->
-                                        store.dispatch(ForumDetailAction.ForumDetailError(e.message ?: "板块详情加载失败"))
+                                        store.dispatch(
+                                            ForumDetailAction.ForumDetailError(
+                                                e.message ?: "板块详情加载失败"
+                                            )
+                                        )
                                     }
                             }
                         }
@@ -40,8 +44,8 @@ object ForumDetailSideEffect {
                     is ForumDetailAction.ForumTabSelect -> {
                         val p = action.position
                         val state = store.state
-                        val changed = p != state.forumDetailUIModel.selectedTabIndex
-                        if (changed && !state.isLoading) {
+                        val notLoaded = !state.forumDetailUIModel.threadDataMap.containsKey(p)
+                        if (notLoaded && !state.isLoading) {
                             store.dispatch(ForumDetailAction.ForumThreadsFetch(p))
                         }
                     }
@@ -50,16 +54,22 @@ object ForumDetailSideEffect {
                         val p = action.position
                         val path = store.state.forumDetailUIModel.header.tabList.getOrNull(p)?.linkUrl
                         if (!path.isNullOrBlank()) {
-                            store.dispatch(ForumDetailAction.ForumDetailLoading)
+                            store.dispatch(ForumDetailAction.ForumThreadsLoading)
                             scope.launch {
                                 runCatching { repository.fetchForumThreads(path) }
                                     .onSuccess { list ->
-                                        store.dispatch(ForumDetailAction.ForumThreadsLoad(list))
+                                        store.dispatch(ForumDetailAction.ForumThreadsLoad(p, list))
                                     }
                                     .onFailure { e ->
-                                        store.dispatch(ForumDetailAction.ForumThreadsError(e.message ?: "帖子列表加载失败"))
+                                        store.dispatch(
+                                            ForumDetailAction.ForumThreadsError(
+                                                e.message ?: "帖子列表加载失败"
+                                            )
+                                        )
                                     }
                             }
+                        } else {
+                            store.dispatch(ForumDetailAction.ForumThreadsLoad(p, emptyList()))
                         }
                     }
 
@@ -73,7 +83,12 @@ object ForumDetailSideEffect {
                                         store.dispatch(ForumDetailAction.ForumFavoriteResult(true, "收藏成功"))
                                     }
                                     .onFailure { e ->
-                                        store.dispatch(ForumDetailAction.ForumFavoriteResult(false, e.message ?: "收藏失败"))
+                                        store.dispatch(
+                                            ForumDetailAction.ForumFavoriteResult(
+                                                false,
+                                                e.message ?: "收藏失败"
+                                            )
+                                        )
                                     }
                             }
                         }

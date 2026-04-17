@@ -18,15 +18,22 @@ class ForumDetailViewModel(
 
     fun fetchForumDetail(forumId: Int?) {
         if (forumId == null) return
+        store.dispatch(ForumDetailAction.ForumDetailReset)
         store.dispatch(
             ForumDetailAction.ForumDetailFetch("forum.php?mod=forumdisplay&fid=$forumId&mobile=2")
         )
     }
 
     fun onTabSelected(position: Int) {
-        val tabs = store.state.forumDetailUIModel.header.tabList
+        val state = store.state
+        val tabs = state.forumDetailUIModel.header.tabList
         if (position !in tabs.indices) return
-        if (position == store.state.forumDetailUIModel.selectedTabIndex) return
+
+        val selected = state.forumDetailUIModel.selectedTabIndex
+        val hasCache = state.forumDetailUIModel.threadDataMap.containsKey(position)
+
+        if (position == selected && hasCache) return
+
         store.dispatch(ForumDetailAction.ForumTabSelect(position))
     }
 

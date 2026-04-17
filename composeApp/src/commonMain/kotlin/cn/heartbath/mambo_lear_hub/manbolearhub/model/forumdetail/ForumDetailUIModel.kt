@@ -3,7 +3,8 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail
 data class ForumDetailUiModel(
     val header: ForumHeader,
     val selectedTabIndex: Int,
-    val threadList: List<ForumThreadItem>
+    val threadList: List<ForumThreadItem>,
+    val threadDataMap: Map<Int, List<ForumThreadItem>>
 ) {
     companion object {
         val Empty = ForumDetailUiModel(
@@ -18,7 +19,8 @@ data class ForumDetailUiModel(
                 tabList = emptyList()
             ),
             selectedTabIndex = 0,
-            threadList = emptyList()
+            threadList = emptyList(),
+            threadDataMap = emptyMap()
         )
     }
 
