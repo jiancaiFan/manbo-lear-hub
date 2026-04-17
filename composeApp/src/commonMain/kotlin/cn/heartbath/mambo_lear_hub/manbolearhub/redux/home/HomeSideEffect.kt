@@ -58,7 +58,6 @@ object HomeSideEffect {
                                         store.dispatch(HomeAction.HomeCategoryLoad(p, data))
                                     }
                                     .onFailure { e ->
-                                        // ✅ 不再传 position
                                         store.dispatch(HomeAction.HomeCategoryError(e.message ?: "加载失败"))
                                     }
                             }

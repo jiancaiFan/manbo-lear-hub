@@ -125,4 +125,79 @@ class ForumDetailRepositoryImpl(
             tabList = tabList
         )
     }
+
+    override suspend fun fetchForumThreads(path: String): List<ForumDetailUiModel.ForumThreadItem> {
+        val html = networkClient.get(path)
+        val doc = Ksoup.parse(html.replace("< img", "<img"), baseUrl)
+
+        fun toAbsUrl(raw: String?): String {
+            val href = raw.orEmpty().trim()
+            if (href.isBlank()) return ""
+            return when {
+                href.startsWith("http://") || href.startsWith("https://") -> href
+                href.startsWith("//") -> "https:$href"
+                href.startsWith("/") -> baseUrl.trimEnd('/') + href
+                else -> baseUrl.trimEnd('/') + "/" + href
+            }
+        }
+
+        fun parseInt(text: String?): Int? =
+            text?.trim()?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }
+
+        return doc.select(".threadlist_box .threadlist ul > li.list").mapNotNull { li ->
+            val threadUrl = toAbsUrl(li.selectFirst("a[href*=\"mod=viewthread\"]")?.attr("href"))
+            if (threadUrl.isBlank()) return@mapNotNull null
+
+            val title = li.selectFirst(".threadlist_tit em")?.text()?.trim().orEmpty()
+            if (title.isBlank()) return@mapNotNull null
+
+            val tid = Regex("""[?&]tid=(\d+)""").find(threadUrl)?.groupValues?.getOrNull(1)
+            val summary = li.selectFirst(".threadlist_mes")?.text()?.trim()?.takeIf { it.isNotBlank() }
+
+            val authorA = li.selectFirst(".threadlist_top .muser h3 a")
+            val authorName = authorA?.text()?.trim()?.takeIf { it.isNotBlank() }
+            val authorUrl = toAbsUrl(authorA?.attr("href")).ifBlank { null }
+
+            val avatarRaw = li.selectFirst(".threadlist_top a.mimg img")?.attr("data-src")
+                ?: li.selectFirst(".threadlist_top a.mimg img")?.attr("src")
+            val authorAvatarUrl = toAbsUrl(avatarRaw).ifBlank { null }
+
+            val publishTimeText = li.selectFirst(".threadlist_top .mtime")?.text()?.trim()
+                ?.takeIf { it.isNotBlank() }
+
+            val imageUrls = li.select(".threadlist_imgs1 img")
+                .mapNotNull { toAbsUrl(it.attr("src")).ifBlank { null } }
+
+            val stats = li.select(".threadlist_foot li")
+            val viewCount = parseInt(stats.getOrNull(0)?.text())
+            val replyCount = parseInt(stats.getOrNull(1)?.text())
+
+            ForumDetailUiModel.ForumThreadItem(
+                threadId = tid,
+                threadUrl = threadUrl,
+                title = title,
+                summary = summary,
+                authorName = authorName,
+                authorUrl = authorUrl,
+                authorAvatarUrl = authorAvatarUrl,
+                publishTimeText = publishTimeText,
+                imageUrls = imageUrls,
+                viewCount = viewCount,
+                replyCount = replyCount
+            )
+        }
+    }
+
+    override suspend fun favoriteForum(actionUrl: String) {
+        val response = networkClient.get(actionUrl)
+
+        val success = response.contains("收藏成功")
+                || response.contains("do_success")
+                || response.contains("favorite")
+                || response.contains("操作成功")
+
+        if (!success) {
+            throw IllegalStateException("收藏请求可能失败，请检查登录态、formhash 或接口返回")
+        }
+    }
 }

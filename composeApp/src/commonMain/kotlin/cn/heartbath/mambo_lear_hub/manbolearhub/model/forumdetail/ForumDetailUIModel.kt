@@ -2,7 +2,8 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail
 
 data class ForumDetailUiModel(
     val header: ForumHeader,
-    val selectedTabIndex: Int
+    val selectedTabIndex: Int,
+    val threadList: List<ForumThreadItem>
 ) {
     companion object {
         val Empty = ForumDetailUiModel(
@@ -16,7 +17,8 @@ data class ForumDetailUiModel(
                 favoriteAction = null,
                 tabList = emptyList()
             ),
-            selectedTabIndex = 0
+            selectedTabIndex = 0,
+            threadList = emptyList()
         )
     }
 
@@ -42,5 +44,19 @@ data class ForumDetailUiModel(
     data class ForumTabUiModel(
         val title: String,
         val linkUrl: String
+    )
+
+    data class ForumThreadItem(
+        val threadId: String?,
+        val threadUrl: String,
+        val title: String,
+        val summary: String?,
+        val authorName: String?,
+        val authorUrl: String?,
+        val authorAvatarUrl: String?,
+        val publishTimeText: String?,
+        val imageUrls: List<String>,
+        val viewCount: Int?,
+        val replyCount: Int?
     )
 }
