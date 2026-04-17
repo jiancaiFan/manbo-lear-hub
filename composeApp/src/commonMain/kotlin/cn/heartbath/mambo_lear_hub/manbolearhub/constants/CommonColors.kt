@@ -32,4 +32,11 @@ internal object CommonColors {
     val BottomBarItemSelectedBg = PrimaryBlueLightBg
     val BottomBarItemSelected = Color(0xFF2F6BFF)
     val BottomBarItemUnselected = Color(0xFF8B95A7)
+
+    // Top action card shadow
+    val TopCardShadowAmbient = Color(0x22000000)
+    val TopCardShadowSpot = Color(0x18000000)
+
+    // Badge
+    val BadgeRed = Color(0xFFEF4444)
 }

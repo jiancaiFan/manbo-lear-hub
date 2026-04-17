@@ -1,7 +1,9 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.forumdetail
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -18,8 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
-import cn.heartbath.mambo_lear_hub.manbolearhub.redux.forumdetail.ForumDetailState
 import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.forumdetail.ForumDetailViewModel
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
@@ -34,7 +36,8 @@ internal fun ForumDetailScreen(
     viewModel: ForumDetailViewModel = koinInject(),
 ) {
     val state by viewModel.forumDetailState.collectAsState()
-    val forumDetailUiModel = state.forumDetailUIModel
+    val uiModel = state.forumDetailUIModel
+
     val platformContext = LocalPlatformContext.current
     val imageLoader = remember {
         ImageLoader.Builder(platformContext)
@@ -42,42 +45,40 @@ internal fun ForumDetailScreen(
             .build()
     }
 
-    val forumTabTitleList = forumDetailUiModel.header.tabList.map { it.title }
+    val tabTitles = uiModel.header.tabList.map { it.title }
         .ifEmpty { listOf("最新", "精华", "热门") }
 
-    val safeSelectedTabIndex = forumDetailUiModel.selectedTabIndex
-        .coerceIn(0, forumTabTitleList.lastIndex.coerceAtLeast(0))
-
+    val initialPage = uiModel.selectedTabIndex.coerceIn(0, (tabTitles.size - 1).coerceAtLeast(0))
     val pagerState = rememberPagerState(
-        initialPage = safeSelectedTabIndex,
-        pageCount = { forumTabTitleList.size }
+        initialPage = initialPage,
+        pageCount = { tabTitles.size }
     )
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(forumId) {
         viewModel.fetchForumDetail(forumId)
     }
 
-    LaunchedEffect(safeSelectedTabIndex, forumTabTitleList.size) {
-        if (forumTabTitleList.isEmpty()) return@LaunchedEffect
-        if (pagerState.currentPage != safeSelectedTabIndex && pagerState.targetPage != safeSelectedTabIndex) {
-            pagerState.scrollToPage(safeSelectedTabIndex)
+    LaunchedEffect(uiModel.selectedTabIndex, tabTitles.size) {
+        if (tabTitles.isEmpty()) return@LaunchedEffect
+        val targetPage = uiModel.selectedTabIndex.coerceIn(0, tabTitles.lastIndex)
+        if (pagerState.currentPage != targetPage) {
+            pagerState.scrollToPage(targetPage)
         }
     }
 
-    LaunchedEffect(pagerState.settledPage, forumTabTitleList.size) {
-        if (forumTabTitleList.isEmpty()) return@LaunchedEffect
-        val settledPageIndex = pagerState.settledPage.coerceIn(0, forumTabTitleList.lastIndex)
-        if (settledPageIndex != forumDetailUiModel.selectedTabIndex) {
-            viewModel.onTabSelected(settledPageIndex)
-        }
+    LaunchedEffect(pagerState.settledPage, tabTitles.size) {
+        if (tabTitles.isEmpty()) return@LaunchedEffect
+        viewModel.onTabSelected(pagerState.settledPage)
     }
 
     Scaffold(
         containerColor = CommonColors.HomePageBg,
+        // 关键：去掉 Scaffold 默认底部 inset，让内容可延伸到导航栏区域
+        contentWindowInsets = WindowInsets(top = 0.dp),
         topBar = {
             ForumTopActionBar(
-                title = forumDetailUiModel.header.forumName.ifBlank { "Forum" },
+                title = uiModel.header.forumName.ifBlank { "Forum" },
                 onBack = onBackToHome,
                 onSearchClick = {},
                 onShareClick = {}
@@ -87,7 +88,10 @@ internal fun ForumDetailScreen(
             FloatingActionButton(
                 onClick = { /* TODO */ },
                 shape = CircleShape,
-                containerColor = CommonColors.PrimaryBlue
+                containerColor = CommonColors.PrimaryBlue,
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .navigationBarsPadding()
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Add,
@@ -103,50 +107,20 @@ internal fun ForumDetailScreen(
                 .padding(innerPadding)
         ) {
             ForumDetailHeader(
-                header = forumDetailUiModel.header,
+                header = uiModel.header,
                 onFollowClick = viewModel::onFavoriteClick
             )
 
-            ForumDetailContent(
-                state = state,
-                forumTabTitleList = forumTabTitleList,
+            ForumDetailTabList(
+                forumTabTitleList = tabTitles,
                 selectedTabIndex = pagerState.currentPage,
-                onTabSelected = { tabIndex ->
-                    if (tabIndex !in forumTabTitleList.indices) return@ForumDetailContent
-                    if (tabIndex == pagerState.currentPage) return@ForumDetailContent
-                    viewModel.onTabSelected(tabIndex)
-                    coroutineScope.launch { pagerState.animateScrollToPage(tabIndex) }
-                },
-                pagerState = pagerState,
-                imageLoader = imageLoader,
-                modifier = Modifier.weight(1f)
+                onTabSelected = { index ->
+                    viewModel.onTabSelected(index)
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                }
             )
+
+            ForumThreadListPager(state, pagerState = pagerState, imageLoader = imageLoader, Modifier.weight(1f))
         }
-    }
-}
-
-@Composable
-internal fun ForumDetailContent(
-    state: ForumDetailState,
-    forumTabTitleList: List<String>,
-    selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit,
-    pagerState: androidx.compose.foundation.pager.PagerState,
-    imageLoader: ImageLoader,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxSize()) {
-        ForumDetailTabList(
-            forumTabTitleList = forumTabTitleList,
-            selectedTabIndex = selectedTabIndex,
-            onTabSelected = onTabSelected
-        )
-
-        ForumThreadListPager(
-            state = state,
-            pagerState = pagerState,
-            imageLoader = imageLoader,
-            modifier = Modifier.weight(1f)
-        )
     }
 }

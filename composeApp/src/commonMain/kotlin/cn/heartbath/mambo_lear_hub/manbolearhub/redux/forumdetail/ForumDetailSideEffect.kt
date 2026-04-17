@@ -42,23 +42,29 @@ object ForumDetailSideEffect {
                     }
 
                     is ForumDetailAction.ForumTabSelect -> {
-                        val p = action.position
+                        val targetPosition = action.position
                         val state = store.state
-                        val notLoaded = !state.forumDetailUIModel.threadDataMap.containsKey(p)
-                        if (notLoaded && !state.isLoading) {
-                            store.dispatch(ForumDetailAction.ForumThreadsFetch(p))
+                        val tabList = state.forumDetailUIModel.header.tabList
+                        val hasCache = state.forumDetailUIModel.threadDataMap.containsKey(targetPosition)
+
+                        if (targetPosition in tabList.indices && !hasCache) {
+                            store.dispatch(ForumDetailAction.ForumThreadsFetch(targetPosition))
                         }
                     }
 
                     is ForumDetailAction.ForumThreadsFetch -> {
-                        val p = action.position
-                        val path = store.state.forumDetailUIModel.header.tabList.getOrNull(p)?.linkUrl
-                        if (!path.isNullOrBlank()) {
+                        val targetPosition = action.position
+                        val tab = store.state.forumDetailUIModel.header.tabList.getOrNull(targetPosition)
+                        val path = tab?.linkUrl
+
+                        if (path.isNullOrBlank()) {
+                            store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, emptyList()))
+                        } else {
                             store.dispatch(ForumDetailAction.ForumThreadsLoading)
                             scope.launch {
                                 runCatching { repository.fetchForumThreads(path) }
                                     .onSuccess { list ->
-                                        store.dispatch(ForumDetailAction.ForumThreadsLoad(p, list))
+                                        store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, list))
                                     }
                                     .onFailure { e ->
                                         store.dispatch(
@@ -68,8 +74,6 @@ object ForumDetailSideEffect {
                                         )
                                     }
                             }
-                        } else {
-                            store.dispatch(ForumDetailAction.ForumThreadsLoad(p, emptyList()))
                         }
                     }
 

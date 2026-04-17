@@ -25,22 +25,22 @@ class ForumDetailViewModel(
     }
 
     fun onTabSelected(position: Int) {
-        val state = store.state
-        val tabs = state.forumDetailUIModel.header.tabList
-        if (position !in tabs.indices) return
+        val currentState = store.state
+        val tabList = currentState.forumDetailUIModel.header.tabList
+        if (position !in tabList.indices) return
 
-        val selected = state.forumDetailUIModel.selectedTabIndex
-        val hasCache = state.forumDetailUIModel.threadDataMap.containsKey(position)
+        val selectedTabIndex = currentState.forumDetailUIModel.selectedTabIndex
+        val hasCache = currentState.forumDetailUIModel.threadDataMap.containsKey(position)
 
-        if (position == selected && hasCache) return
+        if (position == selectedTabIndex && hasCache) return
 
         store.dispatch(ForumDetailAction.ForumTabSelect(position))
     }
 
     fun onFavoriteClick() {
-        val action = store.state.forumDetailUIModel.header.favoriteAction ?: return
-        if (action.actionUrl.isBlank()) return
-        store.dispatch(ForumDetailAction.ForumFavoriteToggle(action))
+        val favoriteAction = store.state.forumDetailUIModel.header.favoriteAction ?: return
+        if (favoriteAction.actionUrl.isBlank()) return
+        store.dispatch(ForumDetailAction.ForumFavoriteToggle(favoriteAction))
     }
 
     override fun onCleared() {
