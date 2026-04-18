@@ -16,8 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -26,7 +27,6 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.forumdetail.ForumDetai
 import coil3.ImageLoader
 import coil3.compose.LocalPlatformContext
 import coil3.svg.SvgDecoder
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 @Composable
@@ -53,28 +53,34 @@ internal fun ForumDetailScreen(
         initialPage = initialPage,
         pageCount = { tabTitles.size }
     )
-    val scope = rememberCoroutineScope()
+
+    // 防止 VM->UI 动画时，又被 settledPage 回传触发二次 dispatch
+    var isSyncingFromVm by remember { mutableStateOf(false) }
 
     LaunchedEffect(forumId) {
         viewModel.fetchForumDetail(forumId)
     }
 
+    // 关键：用 animateScrollToPage，不用 scrollToPage
     LaunchedEffect(uiModel.selectedTabIndex, tabTitles.size) {
         if (tabTitles.isEmpty()) return@LaunchedEffect
         val targetPage = uiModel.selectedTabIndex.coerceIn(0, tabTitles.lastIndex)
-        if (pagerState.currentPage != targetPage) {
-            pagerState.scrollToPage(targetPage)
+        if (pagerState.currentPage != targetPage && pagerState.targetPage != targetPage) {
+            isSyncingFromVm = true
+            pagerState.animateScrollToPage(targetPage)
+            isSyncingFromVm = false
         }
     }
 
     LaunchedEffect(pagerState.settledPage, tabTitles.size) {
         if (tabTitles.isEmpty()) return@LaunchedEffect
-        viewModel.onTabSelected(pagerState.settledPage)
+        if (isSyncingFromVm) return@LaunchedEffect
+        val settled = pagerState.settledPage.coerceIn(0, tabTitles.lastIndex)
+        viewModel.onTabSelected(settled)
     }
 
     Scaffold(
         containerColor = CommonColors.HomePageBg,
-        // 关键：去掉 Scaffold 默认底部 inset，让内容可延伸到导航栏区域
         contentWindowInsets = WindowInsets(top = 0.dp),
         topBar = {
             ForumTopActionBar(
@@ -115,12 +121,17 @@ internal fun ForumDetailScreen(
                 forumTabTitleList = tabTitles,
                 selectedTabIndex = pagerState.currentPage,
                 onTabSelected = { index ->
+                    // 点击只发意图，动画由上面的 VM->UI effect 统一处理
                     viewModel.onTabSelected(index)
-                    scope.launch { pagerState.animateScrollToPage(index) }
                 }
             )
 
-            ForumThreadListPager(state, pagerState = pagerState, imageLoader = imageLoader, Modifier.weight(1f))
+            ForumThreadListPager(
+                state = state,
+                pagerState = pagerState,
+                imageLoader = imageLoader,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

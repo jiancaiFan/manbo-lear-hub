@@ -7,25 +7,40 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel.PostItem
+import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeState
 
 @Composable
 internal fun HomeCategoryContent(
-    data: List<PostItem>,
-    isLoading: Boolean,
-    errorMessage: String?,
+    homeState: HomeState,
+    page: Int,
     onScrollDirectionChanged: (Boolean) -> Unit
 ) {
-    if (!isLoading && errorMessage.isNullOrBlank() && data.isNotEmpty()) {
-        HomePostList(postList = data, onScrollDirectionChanged = onScrollDirectionChanged)
-        return
-    }
+    val data = homeState.uiModel.categoryDataMap[page].orEmpty()
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when {
-            isLoading -> CircularProgressIndicator()
-            !errorMessage.isNullOrBlank() -> Text(text = errorMessage)
-            else -> Text(text = "暂无数据")
+    when {
+        homeState.isSuccess && data.isNotEmpty() -> {
+            HomePostList(
+                postList = data,
+                onScrollDirectionChanged = onScrollDirectionChanged
+            )
+        }
+
+        homeState.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        homeState.isError -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = homeState.errorMessage ?: "加载失败")
+            }
+        }
+
+        else -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "暂无数据")
+            }
         }
     }
 }

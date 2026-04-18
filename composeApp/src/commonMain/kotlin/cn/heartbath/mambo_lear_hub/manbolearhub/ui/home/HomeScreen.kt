@@ -30,18 +30,15 @@ internal fun HomeScreen(
     onScrollDirectionChanged: (Boolean) -> Unit = {}
 ) {
     val homeState by viewModel.homeState.collectAsState()
-    val homeUiModel = homeState.uiModel
-    val categories = homeUiModel.categories
-    val selectedCategory = homeUiModel.selectedCategory
-    val selectedForumCategory = homeUiModel.selectedForumCategory
+    val uiModel = homeState.uiModel
+    val categories = uiModel.categories
+    val selectedCategory = uiModel.selectedCategory
 
     val pagerState = rememberPagerState(
         initialPage = selectedCategory.coerceAtLeast(0),
         pageCount = { categories.size }
     )
     val scope = rememberCoroutineScope()
-
-    // 新增：顶部分类栏折叠状态
     var collapseTopCategoryBar by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedCategory, categories.size) {
@@ -56,6 +53,11 @@ internal fun HomeScreen(
         if (categories.isEmpty()) return@LaunchedEffect
         val settled = pagerState.settledPage.coerceIn(0, categories.lastIndex)
         if (settled != selectedCategory) viewModel.onCategorySelected(settled)
+    }
+
+    val onListScroll: (Boolean) -> Unit = { scrollingDown ->
+        collapseTopCategoryBar = scrollingDown
+        onScrollDirectionChanged(scrollingDown)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -76,7 +78,9 @@ internal fun HomeScreen(
                 categories = categories,
                 selectedCategory = pagerState.currentPage,
                 onSelectedCategory = { index ->
-                    if (index !in categories.indices || index == pagerState.currentPage) return@HomeCategoryNavBar
+                    if (index !in categories.indices || index == pagerState.currentPage) {
+                        return@HomeCategoryNavBar
+                    }
                     scope.launch { pagerState.animateScrollToPage(index) }
                 }
             )
@@ -87,42 +91,21 @@ internal fun HomeScreen(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                val onListScroll: (Boolean) -> Unit = { scrollingDown ->
-                    // 上滑(内容向上) => 折叠顶部分类栏
-                    collapseTopCategoryBar = scrollingDown
-                    // 同时保留你原来的底栏联动
-                    onScrollDirectionChanged(scrollingDown)
-                }
-
                 if (page == categories.lastIndex) {
                     HomeForumContent(
-                        forumCategories = homeUiModel.forumCategories,
-                        selectedForumCategory = selectedForumCategory,
+                        homeState = homeState,
                         onSelectedForumCategory = viewModel::onForumCategorySelected,
                         navigateToForumDetail = navigateToForumDetail,
-                        isLoading = homeState.isLoading,
-                        errorMessage = homeState.errorMessage.takeIf { homeState.isError },
                         onScrollDirectionChanged = onListScroll
                     )
                 } else {
                     HomeCategoryContent(
-                        data = homeUiModel.categoryDataMap[page].orEmpty(),
-                        isLoading = homeState.isLoading,
-                        errorMessage = homeState.errorMessage.takeIf { homeState.isError },
+                        homeState = homeState,
+                        page = page,
                         onScrollDirectionChanged = onListScroll
                     )
                 }
             }
-        } else {
-            HomeCategoryContent(
-                data = emptyList(),
-                isLoading = homeState.isLoading,
-                errorMessage = homeState.errorMessage.takeIf { homeState.isError },
-                onScrollDirectionChanged = { scrollingDown ->
-                    collapseTopCategoryBar = scrollingDown
-                    onScrollDirectionChanged(scrollingDown)
-                }
-            )
         }
     }
 }

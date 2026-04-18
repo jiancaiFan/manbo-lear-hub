@@ -7,34 +7,46 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cn.heartbath.mambo_lear_hub.manbolearhub.model.home.HomeUIModel
+import cn.heartbath.mambo_lear_hub.manbolearhub.redux.home.HomeState
 
 @Composable
 fun HomeForumContent(
-    forumCategories: List<HomeUIModel.ForumCategory>,
-    selectedForumCategory: Int,
+    homeState: HomeState,
     onSelectedForumCategory: (Int) -> Unit,
     navigateToForumDetail: (Int) -> Unit,
-    isLoading: Boolean,
-    errorMessage: String?,
     onScrollDirectionChanged: (Boolean) -> Unit
 ) {
-    if (!isLoading && errorMessage.isNullOrBlank() && forumCategories.isNotEmpty()) {
-        HomeForumList(
-            forumCategories = forumCategories,
-            selectedForumCategory = selectedForumCategory,
-            onSelectedForumCategory = onSelectedForumCategory,
-            navigateToForumDetail = navigateToForumDetail,
-            onScrollDirectionChanged = onScrollDirectionChanged
-        )
-        return
-    }
+    val uiModel = homeState.uiModel
+    val forumCategories = uiModel.forumCategories
+    val selectedForumCategory = uiModel.selectedForumCategory
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when {
-            isLoading -> CircularProgressIndicator()
-            !errorMessage.isNullOrBlank() -> Text(text = errorMessage)
-            else -> Text(text = "暂无数据")
+    when {
+        homeState.isSuccess && forumCategories.isNotEmpty() -> {
+            HomeForumList(
+                forumCategories = forumCategories,
+                selectedForumCategory = selectedForumCategory,
+                onSelectedForumCategory = onSelectedForumCategory,
+                navigateToForumDetail = navigateToForumDetail,
+                onScrollDirectionChanged = onScrollDirectionChanged
+            )
+        }
+
+        homeState.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        homeState.isError -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = homeState.errorMessage ?: "加载失败")
+            }
+        }
+
+        else -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "暂无数据")
+            }
         }
     }
 }
