@@ -1,6 +1,5 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.forumdetail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +33,6 @@ internal fun ForumTopActionBar(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .background(CommonColors.HomePageBg)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

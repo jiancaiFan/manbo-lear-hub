@@ -80,7 +80,7 @@ internal fun ForumDetailScreen(
     }
 
     Scaffold(
-        containerColor = CommonColors.HomePageBg,
+        containerColor = Color.White,
         contentWindowInsets = WindowInsets(top = 0.dp),
         topBar = {
             ForumTopActionBar(
