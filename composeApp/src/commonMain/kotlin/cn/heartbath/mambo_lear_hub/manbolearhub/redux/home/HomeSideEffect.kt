@@ -37,11 +37,16 @@ object HomeSideEffect {
                     is HomeAction.HomeCategorySelect -> {
                         val p = action.position
                         val state = store.state
-                        val notLoaded = !state.uiModel.categoryDataMap.containsKey(p)
-                        if (notLoaded && !state.isLoading) {
-                            if (p == state.uiModel.categories.lastIndex) {
+                        val isForumPage = p == state.uiModel.categories.lastIndex
+
+                        if (isForumPage) {
+                            val forumNotLoaded = state.uiModel.forumCategories.isEmpty()
+                            if (forumNotLoaded && !state.isLoading) {
                                 store.dispatch(HomeAction.HomeForumFetch(p))
-                            } else {
+                            }
+                        } else {
+                            val notLoaded = !state.uiModel.categoryDataMap.containsKey(p)
+                            if (notLoaded && !state.isLoading) {
                                 store.dispatch(HomeAction.HomeCategoryFetch(p))
                             }
                         }
