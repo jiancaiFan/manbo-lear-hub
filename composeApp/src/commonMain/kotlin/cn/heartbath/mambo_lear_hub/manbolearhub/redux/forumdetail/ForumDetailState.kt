@@ -4,7 +4,8 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.model.forumdetail.ForumDetailUiM
 
 data class ForumDetailState(
     val forumDetailUIModel: ForumDetailUiModel = ForumDetailUiModel.Empty,
-    val isLoading: Boolean = false,
+    val isForumLoading: Boolean = false,
+    val isThreadsLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val isError: Boolean = false,
     val errorMessage: String? = null

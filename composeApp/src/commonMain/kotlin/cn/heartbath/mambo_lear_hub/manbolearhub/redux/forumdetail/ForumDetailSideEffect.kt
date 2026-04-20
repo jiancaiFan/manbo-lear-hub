@@ -3,6 +3,7 @@ package cn.heartbath.mambo_lear_hub.manbolearhub.redux.forumdetail
 import cn.heartbath.mambo_lear_hub.manbolearhub.repository.forumdetail.ForumDetailRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.reduxkotlin.Middleware
 import org.reduxkotlin.Store
@@ -11,7 +12,7 @@ object ForumDetailSideEffect {
 
     fun createForumDetailMiddleware(
         repository: ForumDetailRepository,
-        scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+        scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     ): Middleware<ForumDetailState> = { store: Store<ForumDetailState> ->
         { next ->
             { action ->
@@ -22,7 +23,7 @@ object ForumDetailSideEffect {
                         val path = action.path
                         if (path.isNotBlank()) {
                             store.dispatch(ForumDetailAction.ForumDetailLoading)
-                            scope.launch {
+                            scope.launch(Dispatchers.IO) {
                                 runCatching { repository.fetchForumDetail(path) }
                                     .onSuccess { header ->
                                         store.dispatch(ForumDetailAction.ForumDetailLoad(header))
@@ -61,7 +62,7 @@ object ForumDetailSideEffect {
                             store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, emptyList()))
                         } else {
                             store.dispatch(ForumDetailAction.ForumThreadsLoading)
-                            scope.launch {
+                            scope.launch(Dispatchers.IO) {
                                 runCatching { repository.fetchForumThreads(path) }
                                     .onSuccess { list ->
                                         store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, list))

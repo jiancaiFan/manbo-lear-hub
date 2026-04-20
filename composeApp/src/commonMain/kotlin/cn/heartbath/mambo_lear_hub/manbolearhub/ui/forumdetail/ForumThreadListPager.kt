@@ -57,7 +57,7 @@ internal fun ForumThreadListPager(
     val forumDetailUiModel = state.forumDetailUIModel
 
     when {
-        state.isLoading && forumDetailUiModel.threadList.isEmpty() -> {
+        state.isThreadsLoading && forumDetailUiModel.threadList.isEmpty() -> {
             Box(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
