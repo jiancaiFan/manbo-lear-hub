@@ -18,6 +18,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.reduxkotlin.Store
+import kotlin.math.sign
 
 private const val BASE_URL = "https://43.139.98.90/"
 
@@ -53,7 +54,7 @@ val appModule = module {
         HomeStoreProvider.create(repository = get())
     }
 
-    single<Store<ForumDetailState>>(FORUM_DETAIL_STORE) {
+    factory<Store<ForumDetailState>>(FORUM_DETAIL_STORE) {
         ForumDetailStoreProvider.create(repository = get())
     }
 
@@ -65,7 +66,7 @@ val appModule = module {
         )
     }
 
-    single {
+    factory {
         ForumDetailViewModel(
             store = get(FORUM_DETAIL_STORE)
         )
