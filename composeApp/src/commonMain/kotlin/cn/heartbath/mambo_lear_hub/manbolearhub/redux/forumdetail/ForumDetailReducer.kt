@@ -90,24 +90,6 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
             )
         }
 
-        is ForumDetailAction.ForumFavoriteLoading -> {
-            state.copy(
-                isLoading = true,
-                isSuccess = false,
-                isError = false,
-                errorMessage = null
-            )
-        }
-
-        is ForumDetailAction.ForumFavoriteResult -> {
-            state.copy(
-                isLoading = false,
-                isSuccess = action.success,
-                isError = !action.success,
-                errorMessage = if (action.success) null else action.message
-            )
-        }
-
         else -> state
     }
 }

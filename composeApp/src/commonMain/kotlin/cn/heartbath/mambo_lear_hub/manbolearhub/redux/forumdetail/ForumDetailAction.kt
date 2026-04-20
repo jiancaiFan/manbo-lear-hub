@@ -17,8 +17,4 @@ sealed class ForumDetailAction {
         val list: List<ForumDetailUiModel.ForumThreadItem>
     ) : ForumDetailAction()
     data class ForumThreadsError(val message: String) : ForumDetailAction()
-
-    data class ForumFavoriteToggle(val action: ForumDetailUiModel.FavoriteAction) : ForumDetailAction()
-    data object ForumFavoriteLoading : ForumDetailAction()
-    data class ForumFavoriteResult(val success: Boolean, val message: String) : ForumDetailAction()
 }

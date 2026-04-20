@@ -77,27 +77,6 @@ object ForumDetailSideEffect {
                         }
                     }
 
-                    is ForumDetailAction.ForumFavoriteToggle -> {
-                        val actionUrl = action.action.actionUrl
-                        if (actionUrl.isNotBlank()) {
-                            store.dispatch(ForumDetailAction.ForumFavoriteLoading)
-                            scope.launch {
-                                runCatching { repository.favoriteForum(actionUrl) }
-                                    .onSuccess {
-                                        store.dispatch(ForumDetailAction.ForumFavoriteResult(true, "收藏成功"))
-                                    }
-                                    .onFailure { e ->
-                                        store.dispatch(
-                                            ForumDetailAction.ForumFavoriteResult(
-                                                false,
-                                                e.message ?: "收藏失败"
-                                            )
-                                        )
-                                    }
-                            }
-                        }
-                    }
-
                     else -> Unit
                 }
             }

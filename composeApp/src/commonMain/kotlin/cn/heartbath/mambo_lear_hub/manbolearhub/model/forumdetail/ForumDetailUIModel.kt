@@ -15,7 +15,6 @@ data class ForumDetailUiModel(
                 todayPostCount = 0,
                 totalThreadCount = 0,
                 forumRank = 0,
-                favoriteAction = null,
                 tabList = emptyList()
             ),
             selectedTabIndex = 0,
@@ -31,16 +30,7 @@ data class ForumDetailUiModel(
         val todayPostCount: Int?,
         val totalThreadCount: Int?,
         val forumRank: Int?,
-        val favoriteAction: FavoriteAction?,
         val tabList: List<ForumTabUiModel>
-    )
-
-    data class FavoriteAction(
-        val actionUrl: String,
-        val formHash: String?,
-        val handleKey: String?,
-        val displayText: String,
-        val countText: String?
     )
 
     data class ForumTabUiModel(

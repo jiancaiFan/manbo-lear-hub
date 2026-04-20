@@ -103,24 +103,6 @@ class ForumDetailRepositoryImpl(
         val totalThreadCount = parseStat(statText, "主题:")
         val forumRank = parseStat(statText, "排名:")
 
-        val favoriteAction = doc.selectFirst("#a_favorite")?.let { a ->
-            val actionUrl = toAbsUrl(a.attr("href"))
-            if (actionUrl.isBlank()) {
-                null
-            } else {
-                ForumDetailUiModel.FavoriteAction(
-                    actionUrl = actionUrl,
-                    formHash = actionUrl.queryParam("formhash"),
-                    handleKey = actionUrl.queryParam("handlekey"),
-                    displayText = a.ownText().trim().ifBlank { "收藏" },
-                    countText = a.selectFirst("#number_favorite_num")
-                        ?.text()
-                        ?.trim()
-                        ?.takeIf { it.isNotBlank() }
-                )
-            }
-        }
-
         val tabAnchors = doc.select("#dhnav_li li a").ifEmpty {
             doc.select(".dhnav_box a[href*=\"forumdisplay\"]")
         }
@@ -145,7 +127,6 @@ class ForumDetailRepositoryImpl(
             todayPostCount = todayPostCount,
             totalThreadCount = totalThreadCount,
             forumRank = forumRank,
-            favoriteAction = favoriteAction,
             tabList = tabList
         )
     }

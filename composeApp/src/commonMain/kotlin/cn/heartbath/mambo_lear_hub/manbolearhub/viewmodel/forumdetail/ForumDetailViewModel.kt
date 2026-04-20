@@ -38,9 +38,7 @@ class ForumDetailViewModel(
     }
 
     fun onFavoriteClick() {
-        val favoriteAction = store.state.forumDetailUIModel.header.favoriteAction ?: return
-        if (favoriteAction.actionUrl.isBlank()) return
-        store.dispatch(ForumDetailAction.ForumFavoriteToggle(favoriteAction))
+
     }
 
     override fun onCleared() {
