@@ -35,6 +35,7 @@ import org.koin.compose.koinInject
 internal fun MainScreen(
     viewModel: ManBoLearHubViewModel = koinInject(),
     navigateToForumDetail: (Int) -> Unit,
+    navigateToLoginScreen: () -> Unit,
 ) {
     val selectedTab by viewModel.selectedTab.collectAsState()
     var isBarVisible by remember { mutableStateOf(true) }
@@ -58,7 +59,9 @@ internal fun MainScreen(
                 )
 
                 ManBoMainTabType.CIRCLE -> CircleScreen()
-                ManBoMainTabType.PROFILE -> ProfileScreen()
+                ManBoMainTabType.PROFILE -> ProfileScreen(
+                    onLoginClick = navigateToLoginScreen
+                )
             }
 
             AnimatedVisibility(

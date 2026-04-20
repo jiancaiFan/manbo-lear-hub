@@ -1,15 +1,24 @@
 package cn.heartbath.mambo_lear_hub.manbolearhub.ui.profile
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-internal fun ProfileScreen() {
-
+internal fun ProfileScreen(
+    isLoggedIn: Boolean = false,
+    onLoginClick: () -> Unit = {},
+    onGuestClick: () -> Unit = {}
+) {
+    if (isLoggedIn) {
+        ProfileAuthedScreen()
+    } else {
+        ProfileGuestScreen(
+            onLoginClick = onLoginClick,
+            onGuestClick = onGuestClick
+        )
+    }
 }
 
-@Preview
 @Composable
-fun ProfileScreenPreview() {
-    ProfileScreen()
+private fun ProfileAuthedScreen() {
+    // TODO: 已登录页面
 }

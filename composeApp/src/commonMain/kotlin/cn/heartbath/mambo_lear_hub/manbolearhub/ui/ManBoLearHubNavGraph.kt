@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import cn.heartbath.mambo_lear_hub.manbolearhub.ui.login.LoginScreen
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.forumdetail.ForumDetailScreen
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.main.MainScreen
 import kotlinx.serialization.Serializable
@@ -24,7 +25,12 @@ internal fun ManBoLearHubNavGraph() {
     ) {
         composable<AppRoute.Main> {
             MainScreen(
-                navigateToForumDetail = { id -> navController.navigate(AppRoute.ForumDetail(id)) }
+                navigateToForumDetail = { id ->
+                    navController.navigate(AppRoute.ForumDetail(id))
+                                        },
+                navigateToLoginScreen = {
+                    navController.navigate(AppRoute.LoginScreen)
+                }
             )
         }
 
@@ -35,6 +41,12 @@ internal fun ManBoLearHubNavGraph() {
                 onBackToHome = { navController.popBackStack() }
             )
         }
+
+        composable<AppRoute.LoginScreen> {
+            LoginScreen(
+                {}
+            )
+        }
     }
 }
 
@@ -42,9 +54,10 @@ internal fun ManBoLearHubNavGraph() {
 sealed interface AppRoute {
     @Serializable
     data object Main : AppRoute
-
     @Serializable
     data class ForumDetail(val id: Int) : AppRoute
+    @Serializable
+    data object LoginScreen: AppRoute
 }
 
 enum class ManBoMainTabType(title: String) {
