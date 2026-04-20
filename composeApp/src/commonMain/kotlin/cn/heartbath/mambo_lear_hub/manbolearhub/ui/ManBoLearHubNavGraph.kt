@@ -10,9 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import cn.heartbath.mambo_lear_hub.manbolearhub.ui.login.LoginScreen
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.forumdetail.ForumDetailScreen
+import cn.heartbath.mambo_lear_hub.manbolearhub.ui.login.LoginScreen
 import cn.heartbath.mambo_lear_hub.manbolearhub.ui.main.MainScreen
+import cn.heartbath.mambo_lear_hub.manbolearhub.ui.register.RegisterScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -21,13 +22,17 @@ internal fun ManBoLearHubNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = AppRoute.Main
+        startDestination = AppRoute.Main,
+        enterTransition = AppNavTransitions.enter,
+        exitTransition = AppNavTransitions.exit,
+        popEnterTransition = AppNavTransitions.popEnter,
+        popExitTransition = AppNavTransitions.popExit
     ) {
         composable<AppRoute.Main> {
             MainScreen(
                 navigateToForumDetail = { id ->
                     navController.navigate(AppRoute.ForumDetail(id))
-                                        },
+                },
                 navigateToLoginScreen = {
                     navController.navigate(AppRoute.LoginScreen)
                 }
@@ -44,7 +49,15 @@ internal fun ManBoLearHubNavGraph() {
 
         composable<AppRoute.LoginScreen> {
             LoginScreen(
-                {}
+                onBackClick = { navController.popBackStack() },
+                onRegisterClick = { navController.navigate(AppRoute.RegisterScreen) }
+            )
+        }
+
+        composable<AppRoute.RegisterScreen> {
+            RegisterScreen(
+                onBackClick = { navController.popBackStack() },
+                onGoLoginClick = { navController.popBackStack() }
             )
         }
     }
@@ -54,10 +67,15 @@ internal fun ManBoLearHubNavGraph() {
 sealed interface AppRoute {
     @Serializable
     data object Main : AppRoute
+
     @Serializable
     data class ForumDetail(val id: Int) : AppRoute
+
     @Serializable
-    data object LoginScreen: AppRoute
+    data object LoginScreen : AppRoute
+
+    @Serializable
+    data object RegisterScreen : AppRoute
 }
 
 enum class ManBoMainTabType(title: String) {
