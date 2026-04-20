@@ -113,7 +113,7 @@ internal fun HomeForumList(
                 .weight(1f)
                 .fillMaxHeight()
                 .background(CommonColors.HomePageBg),
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(
