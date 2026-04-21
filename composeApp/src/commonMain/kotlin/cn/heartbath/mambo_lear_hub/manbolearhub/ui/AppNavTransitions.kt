@@ -9,7 +9,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavBackStackEntry
 
-private const val NAV_DURATION = 220
+private const val NAV_DURATION = 480
 private val LayerEasing = CubicBezierEasing(0.22f, 0.0f, 0.0f, 1.0f)
 
 object AppNavTransitions {

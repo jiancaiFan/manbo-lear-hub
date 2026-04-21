@@ -10,40 +10,26 @@ class ForumDetailRepositoryImpl(
     private val baseUrl: String
 ) : ForumDetailRepository {
 
+    private fun toAbsUrl(raw: String?): String {
+        val href = raw.orEmpty().trim()
+        if (href.isBlank()) return ""
+
+        val base = baseUrl.trimEnd('/')
+
+        return when {
+            href.startsWith("http://") || href.startsWith("https://") -> href
+            href.startsWith("//") -> "https:$href"
+            href.startsWith("/") -> base + href
+            href.startsWith("./") -> base + "/" + href.removePrefix("./")
+            href.startsWith("../") -> base + "/" + href.removePrefix("../")
+            else -> base + "/" + href
+        }
+    }
+
     override suspend fun fetchForumDetail(path: String): ForumDetailUiModel.ForumHeader {
         val html = networkClient.get(path)
         val normalizedHtml = html.replace("< img", "<img")
         val doc = Ksoup.parse(normalizedHtml, baseUrl)
-
-        fun toAbsUrl(raw: String?): String {
-            val href = raw.orEmpty().trim()
-            if (href.isBlank()) return ""
-
-            val base = baseUrl.trimEnd('/')
-
-            return when {
-                href.startsWith("http://") || href.startsWith("https://") -> href
-                href.startsWith("//") -> "https:$href"
-                href.startsWith("/") -> base + href
-                href.startsWith("./") -> base + "/" + href.removePrefix("./")
-                href.startsWith("../") -> base + "/" + href.removePrefix("../")
-                else -> base + "/" + href
-            }
-        }
-
-        fun String.queryParam(name: String): String? {
-            val query = substringAfter('?', "")
-            if (query.isBlank()) return null
-            return query.split("&")
-                .asSequence()
-                .mapNotNull {
-                    val i = it.indexOf('=')
-                    if (i <= 0) null else it.substring(0, i) to it.substring(i + 1)
-                }
-                .firstOrNull { it.first == name }
-                ?.second
-                ?.takeIf { it.isNotBlank() }
-        }
 
         fun parseStat(statText: String, key: String): Int? {
             val idx = statText.indexOf(key)
@@ -82,11 +68,7 @@ class ForumDetailRepositoryImpl(
                     parsed.contains("noavatar", ignoreCase = true) ||
                     (parsed.endsWith(".svg", ignoreCase = true) && parsed.contains("avatar", ignoreCase = true))
 
-            if (isInvalidPlaceholder) {
-                toAbsUrl("static/image/common/forum_default.png")
-            } else {
-                parsed
-            }
+            if (isInvalidPlaceholder) toAbsUrl("static/image/common/forum_default.png") else parsed
         }.ifBlank { null }
 
         val forumId = run {
@@ -110,14 +92,8 @@ class ForumDetailRepositoryImpl(
         val tabList = tabAnchors.mapNotNull { a ->
             val title = a.text().trim()
             val linkUrl = toAbsUrl(a.attr("href"))
-            if (title.isBlank() || linkUrl.isBlank()) {
-                null
-            } else {
-                ForumDetailUiModel.ForumTabUiModel(
-                    title = title,
-                    linkUrl = linkUrl
-                )
-            }
+            if (title.isBlank() || linkUrl.isBlank()) null
+            else ForumDetailUiModel.ForumTabUiModel(title = title, linkUrl = linkUrl)
         }.distinctBy { it.linkUrl }
 
         return ForumDetailUiModel.ForumHeader(
@@ -134,22 +110,6 @@ class ForumDetailRepositoryImpl(
     override suspend fun fetchForumThreads(path: String): List<ForumDetailUiModel.ForumThreadItem> {
         val html = networkClient.get(path)
         val doc = Ksoup.parse(html.replace("< img", "<img"), baseUrl)
-
-        fun toAbsUrl(raw: String?): String {
-            val href = raw.orEmpty().trim()
-            if (href.isBlank()) return ""
-
-            val base = baseUrl.trimEnd('/')
-
-            return when {
-                href.startsWith("http://") || href.startsWith("https://") -> href
-                href.startsWith("//") -> "https:$href"
-                href.startsWith("/") -> base + href
-                href.startsWith("./") -> base + "/" + href.removePrefix("./")
-                href.startsWith("../") -> base + "/" + href.removePrefix("../")
-                else -> base + "/" + href
-            }
-        }
 
         fun parseInt(text: String?): Int? =
             text?.trim()?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() }

@@ -23,12 +23,12 @@ object ForumDetailSideEffect {
                         val path = action.path
                         if (path.isNotBlank()) {
                             store.dispatch(ForumDetailAction.ForumDetailLoading)
-                            scope.launch(Dispatchers.IO) {
+                            scope.launch {
                                 runCatching { repository.fetchForumDetail(path) }
                                     .onSuccess { header ->
                                         store.dispatch(ForumDetailAction.ForumDetailLoad(header))
                                         if (header.tabList.isNotEmpty()) {
-                                            store.dispatch(ForumDetailAction.ForumTabSelect(0))
+                                            store.dispatch(ForumDetailAction.ForumThreadsFetch(0)) // 直接拉数据
                                         }
                                     }
                                     .onFailure { e ->
@@ -61,8 +61,8 @@ object ForumDetailSideEffect {
                         if (path.isNullOrBlank()) {
                             store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, emptyList()))
                         } else {
-                            store.dispatch(ForumDetailAction.ForumThreadsLoading)
-                            scope.launch(Dispatchers.IO) {
+                            store.dispatch(ForumDetailAction.ForumThreadsLoading(targetPosition))
+                            scope.launch {
                                 runCatching { repository.fetchForumThreads(path) }
                                     .onSuccess { list ->
                                         store.dispatch(ForumDetailAction.ForumThreadsLoad(targetPosition, list))
@@ -70,7 +70,8 @@ object ForumDetailSideEffect {
                                     .onFailure { e ->
                                         store.dispatch(
                                             ForumDetailAction.ForumThreadsError(
-                                                e.message ?: "帖子列表加载失败"
+                                                position = targetPosition,
+                                                message = e.message ?: "帖子列表加载失败"
                                             )
                                         )
                                     }

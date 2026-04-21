@@ -7,7 +7,7 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
         is ForumDetailAction.ForumDetailLoading -> {
             state.copy(
                 isForumLoading = true,
-                isThreadsLoading = false,
+                loadingTabs = emptySet(),
                 isSuccess = false,
                 isError = false,
                 errorMessage = null
@@ -21,7 +21,6 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
                     selectedTabIndex = 0
                 ),
                 isForumLoading = false,
-                isThreadsLoading = false,
                 isSuccess = true,
                 isError = false,
                 errorMessage = null
@@ -31,7 +30,7 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
         is ForumDetailAction.ForumDetailError -> {
             state.copy(
                 isForumLoading = false,
-                isThreadsLoading = false,
+                loadingTabs = emptySet(),
                 isSuccess = false,
                 isError = true,
                 errorMessage = action.message
@@ -54,7 +53,7 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
             state.copy(
                 forumDetailUIModel = ForumDetailUiModel.Empty,
                 isForumLoading = false,
-                isThreadsLoading = false,
+                loadingTabs = emptySet(),
                 isSuccess = false,
                 isError = false,
                 errorMessage = null
@@ -63,7 +62,7 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
 
         is ForumDetailAction.ForumThreadsLoading -> {
             state.copy(
-                isThreadsLoading = true,
+                loadingTabs = state.loadingTabs + action.position,
                 isSuccess = false,
                 isError = false,
                 errorMessage = null
@@ -73,13 +72,17 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
         is ForumDetailAction.ForumThreadsLoad -> {
             state.copy(
                 forumDetailUIModel = state.forumDetailUIModel.copy(
-                    threadList = action.list,
+                    threadList = if (action.position == state.forumDetailUIModel.selectedTabIndex) {
+                        action.list
+                    } else {
+                        state.forumDetailUIModel.threadList
+                    },
                     threadDataMap = state.forumDetailUIModel.threadDataMap
                         .toMutableMap()
                         .apply { this[action.position] = action.list }
                 ),
                 isForumLoading = false,
-                isThreadsLoading = false,
+                loadingTabs = state.loadingTabs - action.position,
                 isSuccess = true,
                 isError = false,
                 errorMessage = null
@@ -88,7 +91,7 @@ val forumDetailReducer: (ForumDetailState, Any) -> ForumDetailState = { state, a
 
         is ForumDetailAction.ForumThreadsError -> {
             state.copy(
-                isThreadsLoading = false,
+                loadingTabs = state.loadingTabs - action.position,
                 isSuccess = false,
                 isError = true,
                 errorMessage = action.message
