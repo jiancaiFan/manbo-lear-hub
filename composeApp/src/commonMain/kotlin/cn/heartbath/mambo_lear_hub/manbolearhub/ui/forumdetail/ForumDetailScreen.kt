@@ -121,7 +121,6 @@ internal fun ForumDetailScreen(
                 forumTabTitleList = tabTitles,
                 selectedTabIndex = pagerState.currentPage,
                 onTabSelected = { index ->
-                    // 点击只发意图，动画由上面的 VM->UI effect 统一处理
                     viewModel.onTabSelected(index)
                 }
             )

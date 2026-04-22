@@ -58,7 +58,7 @@ internal fun ForumThreadListPager(
 
     when {
         state.isThreadsLoading && forumDetailUiModel.threadList.isEmpty() -> {
-            Box(
+            return Box(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
