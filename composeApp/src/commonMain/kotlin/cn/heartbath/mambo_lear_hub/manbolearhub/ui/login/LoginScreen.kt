@@ -20,30 +20,42 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.heartbath.mambo_lear_hub.manbolearhub.components.ManBoTopActionBar
 import cn.heartbath.mambo_lear_hub.manbolearhub.components.ProfilePrimaryButton
 import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
+import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.login.LoginViewModel
+import co.touchlab.kermit.Logger
+import org.koin.compose.koinInject
 
 @Composable
 internal fun LoginScreen(
+    viewModel: LoginViewModel = koinInject(),
     onBackClick: () -> Unit,
-    onLoginClick: (account: String, password: String, autoLogin: Boolean) -> Unit = { _, _, _ -> },
     onForgotPasswordClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onWechatLoginClick: () -> Unit = {}
 ) {
-    var account by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var autoLogin by remember { mutableStateOf(false) }
+    val username by viewModel.username.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val loginState by viewModel.loginState.collectAsState()
+
+    LaunchedEffect(loginState.isSuccess) {
+        if (loginState.isSuccess) {
+            //onBackClick()
+            loginState.loginRaw?.let {
+                Logger.d("Login successful, raw data: $it")
+            }
+        }
+    }
 
     Scaffold(
         containerColor = CommonColors.BackgroundWhite,
@@ -70,20 +82,42 @@ internal fun LoginScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             LoginFormSection(
-                account = account,
+                username = username,
                 password = password,
-                autoLogin = autoLogin,
-                onAccountChange = { account = it },
-                onPasswordChange = { password = it },
-                onAutoLoginChange = { autoLogin = it },
+                viewModel = viewModel,
                 onForgotPasswordClick = onForgotPasswordClick
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (loginState.isError && !loginState.errorMessage.isNullOrBlank()) {
+                Text(
+                    text = loginState.errorMessage!!,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (loginState.isSuccess) {
+                Text(
+                    text = "登录成功",
+                    color = CommonColors.PrimaryBlue,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             ProfilePrimaryButton(
-                text = "立即认证并登录",
-                onClick = { onLoginClick(account, password, autoLogin) }
+                text = if (loginState.isLoading) "登录中..." else "立即认证并登录",
+                enabled = !loginState.isLoading,
+                onClick = { viewModel.onLogin() }
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -100,9 +134,7 @@ internal fun LoginScreen(
 
 @Composable
 private fun LoginHeaderSection() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "登录",
             color = CommonColors.Title,

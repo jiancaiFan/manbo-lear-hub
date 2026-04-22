@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.coil.network.ktor3)
             implementation(libs.coil.svg)
             implementation(libs.korlibs.crypto)
+            implementation(libs.kermit)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

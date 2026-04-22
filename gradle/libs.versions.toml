@@ -13,6 +13,7 @@ coilCompose = "3.4.0"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.3"
 junit = "4.13.2"
+kermit = "2.0.4"
 koinCore = "4.2.1"
 korlibsCrypto = "6.0.1"
 kotlin = "2.3.20"
@@ -30,6 +31,7 @@ reduxKotlinThreadsafe = "0.6.1"
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coilCompose" }
+kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinCore" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
 korlibs-crypto = { module = "com.soywiz:korlibs-crypto", version.ref = "korlibsCrypto" }

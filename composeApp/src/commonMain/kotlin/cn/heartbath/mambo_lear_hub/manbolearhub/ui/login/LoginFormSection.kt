@@ -15,8 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,15 +33,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardOptions
 import cn.heartbath.mambo_lear_hub.manbolearhub.components.ManBoTextField
 import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
+import cn.heartbath.mambo_lear_hub.manbolearhub.viewmodel.login.LoginViewModel
 
 @Composable
 internal fun LoginFormSection(
-    account: String,
+    username: String,
     password: String,
-    autoLogin: Boolean,
-    onAccountChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onAutoLoginChange: (Boolean) -> Unit,
+    viewModel: LoginViewModel,
     onForgotPasswordClick: () -> Unit
 ) {
     val cardShape = RoundedCornerShape(16.dp)
@@ -68,8 +64,8 @@ internal fun LoginFormSection(
         Spacer(modifier = Modifier.height(8.dp))
 
         ManBoTextField(
-            value = account,
-            onValueChange = onAccountChange,
+            value = username,
+            onValueChange = viewModel::onUsernameChanged,
             hint = "手机号 / 邮箱 / 用户名",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             leadingIcon = { Icon(Icons.Outlined.PersonOutline, contentDescription = null, tint = CommonColors.IconHint) }
@@ -89,7 +85,7 @@ internal fun LoginFormSection(
 
         ManBoTextField(
             value = password,
-            onValueChange = onPasswordChange,
+            onValueChange = viewModel::onPasswordChanged,
             hint = "请输入您的密码",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = CommonColors.IconHint) },
@@ -102,32 +98,6 @@ internal fun LoginFormSection(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(bounded = true),
-                    role = Role.Checkbox
-                ) { onAutoLoginChange(!autoLogin) }
-            ) {
-                Checkbox(
-                    checked = autoLogin,
-                    onCheckedChange = onAutoLoginChange,
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = CommonColors.PrimaryBlue,
-                        uncheckedColor = CommonColors.IconHint,
-                        checkmarkColor = CommonColors.BackgroundWhite
-                    )
-                )
-                Text(
-                    text = "自动登录",
-                    color = CommonColors.Meta,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
 
             Spacer(modifier = Modifier.weight(1f))
 

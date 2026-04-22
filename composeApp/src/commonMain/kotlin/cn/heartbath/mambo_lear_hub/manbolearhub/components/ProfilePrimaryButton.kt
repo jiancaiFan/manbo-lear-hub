@@ -32,6 +32,7 @@ import cn.heartbath.mambo_lear_hub.manbolearhub.constants.CommonColors
 internal fun ProfilePrimaryButton(
     text: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -45,6 +46,7 @@ internal fun ProfilePrimaryButton(
 
     Button(
         onClick = onClick,
+        enabled = enabled,
         interactionSource = interactionSource,
         modifier = modifier
             .fillMaxWidth()
